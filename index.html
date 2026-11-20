@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>貓抓老鼠 — 迷宮救援</title>
+  <title>貓抓老鼠 3D — 迷宮救援</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
     * {
@@ -31,197 +32,190 @@
     }
     ::selection { background: transparent !important; color: inherit !important; }
     .ios-glass {
-      background: rgba(15, 23, 42, 0.52);
+      background: rgba(15, 23, 42, 0.54);
       border: 1px solid rgba(255, 255, 255, 0.22);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
     }
     .ios-shell {
-      background: rgba(10, 15, 30, 0.88);
+      background: rgba(10, 15, 30, 0.90);
       border: 1.5px solid rgba(255, 255, 255, 0.24);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    }
-    canvas {
-      touch-action: none !important;
-      display: block;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.48);
     }
     .dpad-btn {
-      background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 100%);
-      border: 1px solid rgba(255,255,255,0.28);
-      box-shadow: 0 3px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
-      transition: background 0.08s ease, box-shadow 0.08s ease;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1.5px solid rgba(255, 255, 255, 0.28);
+      transition: background 0.06s ease, transform 0.06s ease;
     }
     .dpad-btn-active {
-      background: linear-gradient(180deg, #fef08a 0%, #f59e0b 100%) !important;
+      background: rgba(250, 204, 21, 0.92) !important;
       color: #0f172a !important;
       border-color: #ffffff !important;
-      box-shadow: 0 0 16px rgba(250, 204, 21, 0.8) !important;
+      transform: scale(0.92);
     }
-    .hero-float {
-      animation: heroFloat 2.6s ease-in-out infinite;
+    #tension-vignette {
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.16s ease-out;
+      box-shadow: inset 0 0 65px rgba(239, 68, 68, 0.92);
     }
-    @keyframes heroFloat {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-6px); }
+    #cartoon-popup {
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.18s ease;
+    }
+    input[type="range"] {
+      touch-action: pan-x !important;
+      accent-color: #facc15;
     }
   </style>
 </head>
 <body id="app-body" class="w-full h-full overflow-hidden text-white flex flex-col items-center justify-between p-1.5 sm:p-2.5 select-none" oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
 
-  <!-- ===================================================================== -->
-  <!-- 1. GAME HOME MENU SCREEN (DEFAULT LANDING, ZERO SCROLL)               -->
-  <!-- ===================================================================== -->
-  <div id="home-menu-screen" class="fixed inset-0 z-40 flex items-center justify-center p-3 bg-slate-950/88">
-    <div class="w-full max-w-[390px] ios-shell rounded-[36px] p-5 sm:p-6 flex flex-col items-center text-center relative overflow-hidden">
-
-      <!-- Dynamic Island Accent -->
-      <div class="w-28 h-3.5 bg-black rounded-full mb-4 flex items-center justify-between px-3 border border-white/15">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+  <!-- Minimalist Game Options Home Screen -->
+  <div id="home-menu-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-slate-950/94 backdrop-blur-md">
+    <div class="w-full max-w-sm rounded-[2rem] ios-shell p-5 sm:p-6 flex flex-col items-center text-center gap-4 border-2 border-white/25">
+      <div class="flex items-center justify-center gap-3">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-300 via-orange-400 to-rose-500 flex items-center justify-center text-4xl shadow-lg border-2 border-white/50">🐭</div>
+        <div class="text-2xl font-black text-amber-300">3D</div>
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500 via-slate-600 to-slate-800 flex items-center justify-center text-4xl shadow-lg border-2 border-white/30">🐱</div>
       </div>
 
-      <!-- Handcrafted Hero Emblem -->
-      <div class="hero-float w-24 h-24 rounded-3xl bg-gradient-to-br from-amber-300 via-orange-500 to-rose-600 p-1 shadow-2xl mb-3 border-2 border-white/40 flex items-center justify-center">
-        <div class="w-full h-full rounded-[20px] bg-slate-950/85 flex items-center justify-center text-4xl gap-0.5">
-          <span>🐱</span><span class="text-2xl">💨</span><span>🐭</span>
-        </div>
+      <div>
+        <h1 class="text-3xl font-black tracking-tight text-white">貓抓老鼠 3D</h1>
       </div>
 
-      <h1 class="text-3xl font-black tracking-tight text-white drop-shadow">貓抓老鼠</h1>
-
-      <!-- Clean Minimal Options Card -->
-      <div class="w-full ios-glass rounded-2xl p-4 my-4 text-left space-y-3.5">
-        <div class="flex items-center justify-between text-xs font-bold">
-          <span class="text-white/75">當前關卡</span>
+      <div class="w-full flex flex-col gap-2.5 text-left">
+        <div class="w-full px-4 py-2.5 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-between text-xs font-bold">
+          <span class="text-white/75">目前關卡</span>
           <span id="home-level-label" class="text-amber-300 font-black">第 1 / 20 關 · 正方形</span>
         </div>
 
-        <div class="flex items-center justify-between text-xs font-bold">
-          <span class="text-white/75">最高紀錄</span>
-          <span id="home-best-score" class="text-cyan-300 font-black">0 分</span>
+        <div class="w-full px-4 py-2.5 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-between text-xs font-bold">
+          <span class="text-white/75">最高分數</span>
+          <span id="home-best-score" class="text-emerald-300 font-black">0</span>
         </div>
 
-        <div>
-          <div class="flex items-center justify-between text-xs font-bold mb-1.5">
-            <span class="text-white/75">鏡頭視野</span>
-            <span id="home-cam-label" class="text-emerald-300 font-black">9×9</span>
+        <div class="w-full px-4 py-3 rounded-2xl bg-white/10 border border-white/15 flex flex-col gap-1.5">
+          <div class="flex items-center justify-between text-xs font-bold">
+            <span class="text-white/80">3D 視野範圍</span>
+            <span id="home-cam-label" class="text-cyan-300 font-black">9×9</span>
           </div>
-          <input id="home-slider-cam" type="range" min="8" max="14" step="1" value="9" class="w-full accent-emerald-400 cursor-pointer h-1.5 bg-white/20 rounded-lg" />
+          <input id="home-slider-cam" type="range" min="8" max="14" value="9" class="w-full h-2 cursor-pointer" />
         </div>
 
-        <button id="btn-HomeToggleAudio" type="button" class="w-full ios-glass hover:bg-white/15 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition">
-          <span id="home-audio-icon">🔊</span>
-          <span id="home-audio-text">音效：開</span>
+        <button id="btn-HomeToggleAudio" type="button" class="w-full px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 flex items-center justify-between text-xs font-bold active:opacity-80">
+          <span class="text-white/80">遊戲音效</span>
+          <span class="flex items-center gap-1.5 font-black text-amber-300">
+            <span id="home-audio-icon">🔊</span>
+            <span id="home-audio-text">開啟</span>
+          </span>
         </button>
       </div>
 
-      <!-- Primary Start / Resume CTA -->
-      <button id="btn-StartFromHome" type="button" class="w-full py-3.5 px-5 rounded-2xl font-black text-base shadow-xl bg-gradient-to-r from-amber-300 via-amber-400 to-orange-500 text-slate-950 border-2 border-white/60 flex items-center justify-center gap-2 active:opacity-90">
+      <button id="btn-StartFromHome" type="button" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-400 text-slate-950 font-black text-lg shadow-xl border-2 border-white/60 active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
         <span>▶️</span>
         <span id="btn-StartFromHome-text">開始遊戲</span>
       </button>
-
-      <!-- Home Indicator -->
-      <div class="w-28 h-1 bg-white/30 rounded-full mt-5"></div>
     </div>
   </div>
 
-  <!-- ===================================================================== -->
-  <!-- 2. COMPACT TOP BAR (SINGLE LINE, ZERO CLUTTER)                        -->
-  <!-- ===================================================================== -->
-  <header class="w-full max-w-[440px] ios-glass rounded-2xl px-3 py-1.5 flex items-center justify-between gap-2 z-20 shrink-0">
+  <!-- Compact Top Navigation -->
+  <header class="w-full max-w-md flex items-center justify-between gap-2 shrink-0 px-1 pt-0.5">
     <div class="flex items-center gap-2 min-w-0">
-      <div id="theme-badge" class="w-8 h-8 rounded-xl flex items-center justify-center text-base shadow-inner font-bold border border-white/40 shrink-0">
-        🐭
-      </div>
-      <div class="truncate">
-        <div class="text-sm font-black tracking-tight leading-none truncate">貓抓老鼠</div>
+      <div class="w-9 h-9 rounded-xl ios-glass flex items-center justify-center text-xl shadow shrink-0">🐭</div>
+      <div class="min-w-0 leading-tight">
+        <div class="flex items-center gap-1.5">
+          <span class="text-sm sm:text-base font-black tracking-tight text-white truncate">貓抓老鼠 3D</span>
+          <span id="theme-badge" class="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-white/20 text-white shrink-0">橘系</span>
+        </div>
         <div id="level-subtitle" class="text-[11px] text-white/85 font-bold mt-0.5 truncate">第 1 / 20 關 · 正方形</div>
       </div>
     </div>
 
     <div class="flex items-center gap-1.5 shrink-0">
-      <button id="btn-ReturnHome" type="button" class="ios-glass hover:bg-white/20 w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center" title="首頁">🏠</button>
-      <button id="btn-ToggleBGM" type="button" class="ios-glass hover:bg-white/20 w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center" title="靜音切換">
+      <button id="btn-ReturnHome" type="button" class="ios-glass hover:bg-white/20 px-2.5 h-8 rounded-full flex items-center justify-center gap-1 text-xs font-bold active:opacity-80" title="首頁">
+        <span>🏠</span>
+      </button>
+      <button id="btn-ToggleBGM" type="button" class="ios-glass hover:bg-white/20 w-8 h-8 rounded-full flex items-center justify-center text-sm active:opacity-80" title="音效">
         <span id="bgm-icon">🔊</span>
       </button>
-      <button id="btn-Pause" type="button" class="ios-glass hover:bg-white/20 w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center" title="暫停">
-        <span id="pause-icon">⏸️</span>
+      <button id="btn-Pause" type="button" class="ios-glass hover:bg-white/20 w-8 h-8 rounded-full flex items-center justify-center text-xs font-black active:opacity-80" title="暫停">
+        <span id="pause-icon">⏸</span>
       </button>
     </div>
   </header>
 
-  <!-- ===================================================================== -->
-  <!-- 3. FULLSCREEN ZERO-SCROLL iPHONE GAME SHELL                           -->
-  <!-- ===================================================================== -->
-  <main class="w-full max-w-[440px] flex-1 min-h-0 flex flex-col my-1 z-10 overflow-hidden">
-    <section class="w-full h-full min-h-0 ios-shell rounded-[32px] p-2.5 sm:p-3 flex flex-col items-center justify-between relative overflow-hidden">
+  <!-- Main Fullscreen iPhone 3D Stage -->
+  <main class="w-full max-w-md flex-1 min-h-0 flex flex-col justify-between my-1">
+    <section class="w-full h-full flex-1 min-h-0 ios-shell rounded-[1.8rem] p-2 sm:p-2.5 flex flex-col items-center justify-between gap-1.5 relative overflow-hidden">
 
-      <!-- Top HUD Strip -->
-      <div class="w-full shrink-0 space-y-1.5">
-        <div class="w-full flex items-center justify-between gap-2">
-          <div class="h-4 bg-black/90 rounded-full px-2.5 flex items-center gap-1.5 border border-white/15">
-            <span id="danger-led" class="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span id="island-status" class="text-[9px] text-white/85 font-extrabold tracking-wider">L1</span>
-          </div>
-          <div id="mission-banner" class="flex-1 rounded-lg px-2.5 py-0.5 text-[11px] font-extrabold flex items-center justify-between shadow-inner truncate">
-            <span id="mission-text" class="truncate">🐭 0 / 2</span>
-            <span id="shape-pill" class="px-1.5 py-0.2 rounded text-[10px] bg-black/35 text-white font-extrabold shrink-0">20×20</span>
-          </div>
+      <!-- Dynamic Island Status Pill -->
+      <div class="w-full flex items-center justify-center shrink-0">
+        <div class="bg-black/95 px-3 py-1 rounded-full flex items-center gap-2 border border-white/15">
+          <div id="danger-led" class="w-2 h-2 rounded-full bg-emerald-400"></div>
+          <span id="island-status" class="text-[10px] font-black tracking-wide text-white/95">3D 迷宮進行中</span>
+        </div>
+      </div>
+
+      <!-- Compact Mission & HUD Counters -->
+      <div class="w-full shrink-0 flex flex-col gap-1">
+        <div id="mission-banner" class="w-full px-3 py-1 rounded-xl bg-white/12 border border-white/15 flex items-center justify-between text-[11px] font-bold">
+          <span id="mission-text" class="truncate">尋找 2 隻小老鼠</span>
+          <span id="shape-pill" class="px-2 py-0.5 rounded-full bg-black/40 text-amber-300 text-[10px] font-black shrink-0 ml-2">正方形</span>
         </div>
 
         <div class="w-full grid grid-cols-4 gap-1 text-center">
-          <div class="ios-glass rounded-xl py-0.5 px-1">
-            <div class="text-[9px] text-white/65 leading-tight">生命</div>
-            <div id="hud-lives" class="text-xs font-black leading-tight">❤️❤️❤️</div>
+          <div class="bg-white/10 rounded-xl py-1 px-1 border border-white/10">
+            <div class="text-[9px] text-white/60 font-bold">生命</div>
+            <div id="hud-lives" class="text-[11px] font-black text-rose-300 leading-tight">❤️❤️❤️</div>
           </div>
-          <div class="ios-glass rounded-xl py-0.5 px-1">
-            <div class="text-[9px] text-white/65 leading-tight">幼鼠</div>
-            <div id="hud-babies" class="text-xs font-black leading-tight text-yellow-300">🐭 0/2</div>
+          <div class="bg-white/10 rounded-xl py-1 px-1 border border-white/10">
+            <div class="text-[9px] text-white/60 font-bold">救援</div>
+            <div id="hud-babies" class="text-[11px] font-black text-amber-300 leading-tight">0 / 2</div>
           </div>
-          <div class="ios-glass rounded-xl py-0.5 px-1">
-            <div class="text-[9px] text-white/65 leading-tight">續關/惡貓</div>
-            <div id="hud-cats" class="text-xs font-black leading-tight text-rose-300">🔄10 · 🐱2</div>
+          <div class="bg-white/10 rounded-xl py-1 px-1 border border-white/10">
+            <div class="text-[9px] text-white/60 font-bold">續關·貓</div>
+            <div id="hud-cats" class="text-[11px] font-black text-cyan-300 leading-tight">🔄10·🐱2</div>
           </div>
-          <div class="ios-glass rounded-xl py-0.5 px-1">
-            <div class="text-[9px] text-white/65 leading-tight">積分</div>
-            <div id="hud-score" class="text-xs font-black leading-tight text-cyan-200">0</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Flexible Full-Fit Maze Canvas -->
-      <div id="canvas-wrapper" class="w-full flex-1 min-h-0 my-1.5 rounded-2xl overflow-hidden relative shadow-inner border border-white/25 bg-slate-950 flex items-center justify-center touch-none">
-        <canvas id="maze-canvas" class="w-full h-full block"></canvas>
-
-        <!-- Non-intrusive Toast Badge -->
-        <div id="cartoon-popup" class="pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full font-black text-xs shadow-lg opacity-0 transition-opacity duration-150 bg-yellow-300 text-slate-950 border border-slate-900 z-30">
-          🐭 +1
-        </div>
-
-        <!-- Cat Proximity Tension Vignette -->
-        <div id="tension-vignette" class="pointer-events-none absolute inset-0 rounded-2xl opacity-0 z-10" style="box-shadow: inset 0 0 46px rgba(244, 63, 94, 0.88);"></div>
-
-        <!-- Pause / All-Clear Celebration Overlay -->
-        <div id="canvas-overlay" class="absolute inset-0 bg-slate-950/90 hidden flex-col items-center justify-center p-4 text-center z-20">
-          <div id="overlay-emoji" class="text-4xl mb-1.5">⏸️</div>
-          <h2 id="overlay-title" class="text-lg font-black tracking-tight mb-1">已暫停</h2>
-          <p id="overlay-desc" class="text-xs text-white/80 max-w-xs leading-relaxed mb-3"></p>
-          <div class="flex flex-wrap items-center justify-center gap-2 w-full max-w-xs">
-            <button id="btn-OverlayPrimary" type="button" class="flex-1 py-2.5 px-4 rounded-xl font-black text-xs sm:text-sm shadow-lg bg-gradient-to-r from-amber-300 to-orange-500 text-slate-950">
-              ▶️ 繼續
-            </button>
-            <button id="btn-OverlaySecondary" type="button" class="py-2.5 px-3.5 rounded-xl font-bold text-xs ios-glass hover:bg-white/20 hidden">
-              🏠 首頁
-            </button>
+          <div class="bg-white/10 rounded-xl py-1 px-1 border border-white/10">
+            <div class="text-[9px] text-white/60 font-bold">分數</div>
+            <div id="hud-score" class="text-[11px] font-black text-emerald-300 leading-tight">0</div>
           </div>
         </div>
       </div>
 
-      <!-- Bottom Ergonomic Controller Bar (Left: Restart/Guide | RIGHT: 4-Way D-Pad) -->
+      <!-- 3D WebGL Maze Viewport + 2D Minimap/Firecrackers Overlay Canvas -->
+      <div id="canvas-wrapper" class="relative w-full flex-1 min-h-0 rounded-2xl overflow-hidden border-2 border-white/25 bg-slate-950 shadow-inner touch-none">
+        <canvas id="webgl-canvas" class="w-full h-full block touch-none"></canvas>
+        <canvas id="fx-canvas" class="absolute inset-0 w-full h-full block pointer-events-none"></canvas>
+
+        <!-- Minimal Toast -->
+        <div id="cartoon-popup" class="pointer-events-none absolute top-2.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-xs shadow-lg opacity-0 scale-75 whitespace-nowrap z-20">
+          救援成功
+        </div>
+
+        <!-- Proximity Red Tension Vignette -->
+        <div id="tension-vignette" class="absolute inset-0 z-10 rounded-2xl"></div>
+
+        <!-- Pause / Victory Overlay -->
+        <div id="canvas-overlay" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center p-4 text-center bg-slate-950/65 backdrop-blur-[2px]">
+          <div id="overlay-emoji" class="text-5xl mb-2">🎉</div>
+          <h2 id="overlay-title" class="text-2xl font-black text-white mb-1 drop-shadow">全關卡破關！</h2>
+          <p id="overlay-desc" class="text-xs sm:text-sm text-white/90 font-semibold mb-4 max-w-[260px] leading-relaxed drop-shadow"></p>
+          <div class="flex flex-col gap-2 w-full max-w-[220px]">
+            <button id="btn-OverlayPrimary" type="button" class="w-full py-2.5 rounded-2xl bg-gradient-to-r from-amber-300 to-orange-400 text-slate-950 font-black text-sm shadow-lg active:opacity-85">
+              重新開始
+            </button>
+            <button id="btn-OverlaySecondary" type="button" class="hidden w-full py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs border border-white/20">
+              返回選項首頁
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Ergonomic Controller Bar (Left: Restart/Guide | RIGHT: 4-Way D-Pad — NO DASH) -->
       <div class="w-full shrink-0 flex items-center justify-between gap-2 px-1 touch-none">
 
         <!-- Left: Clean Utility Controls (Restart & Levels 1-3 Guide Toggle) -->
-        <div class="flex flex-col items-stretch justify-center gap-2 min-w-[112px]">
+        <div class="flex flex-col items-stretch justify-center gap-2 min-w-[116px]">
           <button id="btn-Restart" type="button" class="ios-glass hover:bg-white/20 px-3.5 py-2.5 rounded-2xl flex items-center justify-center font-bold text-xs gap-1.5 shadow w-full active:opacity-80">
             <span>🔄</span><span>重設本關</span>
           </button>
@@ -257,154 +251,113 @@
     window.addEventListener('selectstart', (e) => e.preventDefault(), { passive: false });
     window.addEventListener('contextmenu', (e) => e.preventDefault(), { passive: false });
     window.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
-    window.addEventListener('dragstart', (e) => e.preventDefault(), { passive: false });
     window.addEventListener('touchmove', (e) => {
       if (e.target.type !== 'range') e.preventDefault();
     }, { passive: false });
 
     // =========================================================================
-    // 1. 10-LEVEL SPECIFICATIONS (Shape, Grid 20->30->40, Cats 2->3->4, Babies 2..11, Color Rotation)
+    // 1. 20-LEVEL SPECIFICATIONS (Shape, Color Rotation, Cats, Babies)
     // =========================================================================
     const LEVELS = [
       {
-        level: 1, shapeId: 'square', shapeName: '正方形', cols: 20, rows: 20, cats: 2, babies: 2,
+        level: 1, shapeId: 'square', shapeName: '正方形', colorLabel: '橘系', cols: 20, rows: 20, cats: 2, babies: 2,
         bgGradient: 'linear-gradient(145deg, #c2410c 0%, #f97316 52%, #fb923c 100%)',
-        wallGradStart: '#fff7ed', wallGradMid: '#fb923c', wallGradEnd: '#00e5ff',
-        wallTopColor: '#fed7aa', wallSideColor: '#7c2d12',
-        floorColor: '#161636', floorAltColor: '#1d1d42', contrastHex: '#00e5ff'
+        wallColor: '#ea580c', wallTopColor: '#fed7aa', floorColor: '#171738', floorAltColor: '#1f1f4a', contrastHex: '#00e5ff', skyHex: '#121026'
       },
       {
-        level: 2, shapeId: 'rectangle', shapeName: '長方形', cols: 30, rows: 30, cats: 3, babies: 3,
+        level: 2, shapeId: 'rectangle', shapeName: '長方形', colorLabel: '綠系', cols: 30, rows: 30, cats: 3, babies: 3,
         bgGradient: 'linear-gradient(145deg, #065f46 0%, #10b981 52%, #34d399 100%)',
-        wallGradStart: '#ecfdf5', wallGradMid: '#34d399', wallGradEnd: '#ff4081',
-        wallTopColor: '#a7f3d0', wallSideColor: '#064e3b',
-        floorColor: '#210f3d', floorAltColor: '#2a144d', contrastHex: '#ff4081'
+        wallColor: '#059669', wallTopColor: '#a7f3d0', floorColor: '#21103d', floorAltColor: '#2c1652', contrastHex: '#ff4081', skyHex: '#150b29'
       },
       {
-        level: 3, shapeId: 'triangle', shapeName: '三角形', cols: 40, rows: 40, cats: 4, babies: 4,
+        level: 3, shapeId: 'triangle', shapeName: '三角形', colorLabel: '紅系', cols: 40, rows: 40, cats: 4, babies: 4,
         bgGradient: 'linear-gradient(145deg, #9f1239 0%, #ef4444 52%, #fb7185 100%)',
-        wallGradStart: '#fff1f2', wallGradMid: '#fb7185', wallGradEnd: '#aeea00',
-        wallTopColor: '#fecdd3', wallSideColor: '#881337',
-        floorColor: '#0d1526', floorAltColor: '#142038', contrastHex: '#aeea00'
+        wallColor: '#e11d48', wallTopColor: '#fecdd3', floorColor: '#0d1526', floorAltColor: '#15223b', contrastHex: '#aeea00', skyHex: '#0b101f'
       },
       {
-        level: 4, shapeId: 'circle', shapeName: '圓形', cols: 20, rows: 20, cats: 2, babies: 5,
+        level: 4, shapeId: 'circle', shapeName: '圓形', colorLabel: '藍系', cols: 20, rows: 20, cats: 2, babies: 5,
         bgGradient: 'linear-gradient(145deg, #1e40af 0%, #3b82f6 52%, #38bdf8 100%)',
-        wallGradStart: '#eff6ff', wallGradMid: '#60a5fa', wallGradEnd: '#ffd600',
-        wallTopColor: '#bfdbfe', wallSideColor: '#1e3a8a',
-        floorColor: '#101b3d', floorAltColor: '#172550', contrastHex: '#ffd600'
+        wallColor: '#2563eb', wallTopColor: '#bfdbfe', floorColor: '#101b3d', floorAltColor: '#192959', contrastHex: '#ffd600', skyHex: '#0b122b'
       },
       {
-        level: 5, shapeId: 'diamond', shapeName: '菱形', cols: 30, rows: 30, cats: 3, babies: 6,
+        level: 5, shapeId: 'diamond', shapeName: '菱形', colorLabel: '黃系', cols: 30, rows: 30, cats: 3, babies: 6,
         bgGradient: 'linear-gradient(145deg, #92400e 0%, #eab308 52%, #facc15 100%)',
-        wallGradStart: '#fefce8', wallGradMid: '#facc15', wallGradEnd: '#c084fc',
-        wallTopColor: '#fef08a', wallSideColor: '#713f12',
-        floorColor: '#220e45', floorAltColor: '#2c1457', contrastHex: '#c084fc'
+        wallColor: '#d97706', wallTopColor: '#fef08a', floorColor: '#220e45', floorAltColor: '#30165e', contrastHex: '#c084fc', skyHex: '#170930'
       },
       {
-        level: 6, shapeId: 'ellipse', shapeName: '橢圓形', cols: 40, rows: 40, cats: 4, babies: 7,
+        level: 6, shapeId: 'ellipse', shapeName: '橢圓形', colorLabel: '橘系', cols: 40, rows: 40, cats: 4, babies: 7,
         bgGradient: 'linear-gradient(145deg, #9a3412 0%, #ea580c 52%, #fb923c 100%)',
-        wallGradStart: '#ffedd5', wallGradMid: '#fb923c', wallGradEnd: '#38bdf8',
-        wallTopColor: '#fed7aa', wallSideColor: '#7c2d12',
-        floorColor: '#0b2f4a', floorAltColor: '#0f3c5e', contrastHex: '#38bdf8'
+        wallColor: '#ea580c', wallTopColor: '#ffedd5', floorColor: '#0b2f4a', floorAltColor: '#114166', contrastHex: '#38bdf8', skyHex: '#072033'
       },
       {
-        level: 7, shapeId: 'hexagon', shapeName: '六邊形', cols: 20, rows: 20, cats: 2, babies: 8,
+        level: 7, shapeId: 'hexagon', shapeName: '六邊形', colorLabel: '綠系', cols: 20, rows: 20, cats: 2, babies: 8,
         bgGradient: 'linear-gradient(145deg, #166534 0%, #22c55e 52%, #4ade80 100%)',
-        wallGradStart: '#dcfce7', wallGradMid: '#4ade80', wallGradEnd: '#fb7185',
-        wallTopColor: '#bbf7d0', wallSideColor: '#14532d',
-        floorColor: '#260e26', floorAltColor: '#331433', contrastHex: '#fb7185'
+        wallColor: '#16a34a', wallTopColor: '#bbf7d0', floorColor: '#260e26', floorAltColor: '#381538', contrastHex: '#fb7185', skyHex: '#1a091a'
       },
       {
-        level: 8, shapeId: 'star', shapeName: '星形', cols: 30, rows: 30, cats: 3, babies: 9,
+        level: 8, shapeId: 'star', shapeName: '星形', colorLabel: '紅系', cols: 30, rows: 30, cats: 3, babies: 9,
         bgGradient: 'linear-gradient(145deg, #991b1b 0%, #dc2626 52%, #f87171 100%)',
-        wallGradStart: '#fee2e2', wallGradMid: '#f87171', wallGradEnd: '#22d3ee',
-        wallTopColor: '#fecaca', wallSideColor: '#7f1d1d',
-        floorColor: '#072430', floorAltColor: '#0b3040', contrastHex: '#22d3ee'
+        wallColor: '#dc2626', wallTopColor: '#fecaca', floorColor: '#072430', floorAltColor: '#0c3547', contrastHex: '#22d3ee', skyHex: '#051821'
       },
       {
-        level: 9, shapeId: 'heart', shapeName: '愛心形', cols: 40, rows: 40, cats: 4, babies: 10,
+        level: 9, shapeId: 'heart', shapeName: '愛心形', colorLabel: '藍系', cols: 40, rows: 40, cats: 4, babies: 10,
         bgGradient: 'linear-gradient(145deg, #1d4ed8 0%, #2563eb 52%, #60a5fa 100%)',
-        wallGradStart: '#dbeafe', wallGradMid: '#60a5fa', wallGradEnd: '#fb923c',
-        wallTopColor: '#bfdbfe', wallSideColor: '#1e3a8a',
-        floorColor: '#18153b', floorAltColor: '#201c4d', contrastHex: '#fb923c'
+        wallColor: '#2563eb', wallTopColor: '#dbeafe', floorColor: '#18153b', floorAltColor: '#231f54', contrastHex: '#fb923c', skyHex: '#100d29'
       },
       {
-        level: 10, shapeId: 'hourglass', shapeName: '沙漏王冠形', cols: 40, rows: 40, cats: 4, babies: 11,
+        level: 10, shapeId: 'hourglass', shapeName: '沙漏王冠形', colorLabel: '黃系', cols: 40, rows: 40, cats: 4, babies: 11,
         bgGradient: 'linear-gradient(145deg, #854d0e 0%, #eab308 52%, #fde047 100%)',
-        wallGradStart: '#fef9c3', wallGradMid: '#fde047', wallGradEnd: '#60a5fa',
-        wallTopColor: '#fef08a', wallSideColor: '#713f12',
-        floorColor: '#161436', floorAltColor: '#1e1b47', contrastHex: '#60a5fa'
+        wallColor: '#ca8a04', wallTopColor: '#fef9c3', floorColor: '#161436', floorAltColor: '#211e4f', contrastHex: '#60a5fa', skyHex: '#0e0d24'
       },
       {
-        level: 11, shapeId: 'cross', shapeName: '十字堡壘', cols: 30, rows: 30, cats: 3, babies: 12,
+        level: 11, shapeId: 'cross', shapeName: '十字堡壘', colorLabel: '橘系', cols: 30, rows: 30, cats: 3, babies: 12,
         bgGradient: 'linear-gradient(145deg, #c2410c 0%, #f97316 52%, #fb923c 100%)',
-        wallGradStart: '#fff7ed', wallGradMid: '#fb923c', wallGradEnd: '#22d3ee',
-        wallTopColor: '#fed7aa', wallSideColor: '#7c2d12',
-        floorColor: '#121836', floorAltColor: '#192147', contrastHex: '#22d3ee'
+        wallColor: '#f97316', wallTopColor: '#fed7aa', floorColor: '#121836', floorAltColor: '#1b244f', contrastHex: '#22d3ee', skyHex: '#0b0f24'
       },
       {
-        level: 12, shapeId: 'ring', shapeName: '環形競技場', cols: 30, rows: 30, cats: 3, babies: 13,
+        level: 12, shapeId: 'ring', shapeName: '環形競技場', colorLabel: '綠系', cols: 30, rows: 30, cats: 3, babies: 13,
         bgGradient: 'linear-gradient(145deg, #065f46 0%, #10b981 52%, #34d399 100%)',
-        wallGradStart: '#ecfdf5', wallGradMid: '#34d399', wallGradEnd: '#fb7185',
-        wallTopColor: '#a7f3d0', wallSideColor: '#064e3b',
-        floorColor: '#1f1038', floorAltColor: '#29164a', contrastHex: '#fb7185'
+        wallColor: '#10b981', wallTopColor: '#a7f3d0', floorColor: '#1f1038', floorAltColor: '#2d1852', contrastHex: '#fb7185', skyHex: '#140a26'
       },
       {
-        level: 13, shapeId: 'octagon', shapeName: '八角寶石', cols: 36, rows: 36, cats: 4, babies: 14,
+        level: 13, shapeId: 'octagon', shapeName: '八角寶石', colorLabel: '紅系', cols: 36, rows: 36, cats: 4, babies: 14,
         bgGradient: 'linear-gradient(145deg, #9f1239 0%, #ef4444 52%, #fb7185 100%)',
-        wallGradStart: '#fff1f2', wallGradMid: '#fb7185', wallGradEnd: '#bef264',
-        wallTopColor: '#fecdd3', wallSideColor: '#881337',
-        floorColor: '#0c1829', floorAltColor: '#13243b', contrastHex: '#bef264'
+        wallColor: '#ef4444', wallTopColor: '#fecdd3', floorColor: '#0c1829', floorAltColor: '#142640', contrastHex: '#bef264', skyHex: '#08101c'
       },
       {
-        level: 14, shapeId: 'crescent', shapeName: '新月彎弧', cols: 36, rows: 36, cats: 4, babies: 15,
+        level: 14, shapeId: 'crescent', shapeName: '新月彎弧', colorLabel: '藍系', cols: 36, rows: 36, cats: 4, babies: 15,
         bgGradient: 'linear-gradient(145deg, #1e40af 0%, #3b82f6 52%, #38bdf8 100%)',
-        wallGradStart: '#eff6ff', wallGradMid: '#60a5fa', wallGradEnd: '#fde047',
-        wallTopColor: '#bfdbfe', wallSideColor: '#1e3a8a',
-        floorColor: '#111b3b', floorAltColor: '#182652', contrastHex: '#fde047'
+        wallColor: '#3b82f6', wallTopColor: '#bfdbfe', floorColor: '#111b3b', floorAltColor: '#1a2957', contrastHex: '#fde047', skyHex: '#0a1126'
       },
       {
-        level: 15, shapeId: 'clover', shapeName: '四葉幸運草', cols: 36, rows: 36, cats: 4, babies: 16,
+        level: 15, shapeId: 'clover', shapeName: '四葉幸運草', colorLabel: '黃系', cols: 36, rows: 36, cats: 4, babies: 16,
         bgGradient: 'linear-gradient(145deg, #92400e 0%, #eab308 52%, #facc15 100%)',
-        wallGradStart: '#fefce8', wallGradMid: '#facc15', wallGradEnd: '#c084fc',
-        wallTopColor: '#fef08a', wallSideColor: '#713f12',
-        floorColor: '#210f42', floorAltColor: '#2c1557', contrastHex: '#c084fc'
+        wallColor: '#eab308', wallTopColor: '#fef08a', floorColor: '#210f42', floorAltColor: '#2f165c', contrastHex: '#c084fc', skyHex: '#15092b'
       },
       {
-        level: 16, shapeId: 'shield', shapeName: '騎士盾牌', cols: 40, rows: 40, cats: 4, babies: 17,
+        level: 16, shapeId: 'shield', shapeName: '騎士盾牌', colorLabel: '橘系', cols: 40, rows: 40, cats: 4, babies: 17,
         bgGradient: 'linear-gradient(145deg, #9a3412 0%, #ea580c 52%, #fb923c 100%)',
-        wallGradStart: '#ffedd5', wallGradMid: '#fb923c', wallGradEnd: '#38bdf8',
-        wallTopColor: '#fed7aa', wallSideColor: '#7c2d12',
-        floorColor: '#0c2b45', floorAltColor: '#113a5c', contrastHex: '#38bdf8'
+        wallColor: '#ea580c', wallTopColor: '#fed7aa', floorColor: '#0c2b45', floorAltColor: '#123e63', contrastHex: '#38bdf8', skyHex: '#071d30'
       },
       {
-        level: 17, shapeId: 'butterfly', shapeName: '蝴蝶雙翼', cols: 40, rows: 40, cats: 5, babies: 18,
+        level: 17, shapeId: 'butterfly', shapeName: '蝴蝶雙翼', colorLabel: '綠系', cols: 40, rows: 40, cats: 5, babies: 18,
         bgGradient: 'linear-gradient(145deg, #166534 0%, #22c55e 52%, #4ade80 100%)',
-        wallGradStart: '#dcfce7', wallGradMid: '#4ade80', wallGradEnd: '#f472b6',
-        wallTopColor: '#bbf7d0', wallSideColor: '#14532d',
-        floorColor: '#240f29', floorAltColor: '#311538', contrastHex: '#f472b6'
+        wallColor: '#22c55e', wallTopColor: '#bbf7d0', floorColor: '#240f29', floorAltColor: '#35173d', contrastHex: '#f472b6', skyHex: '#17091c'
       },
       {
-        level: 18, shapeId: 'castle', shapeName: '城堡箭塔', cols: 40, rows: 40, cats: 5, babies: 19,
+        level: 18, shapeId: 'castle', shapeName: '城堡箭塔', colorLabel: '紅系', cols: 40, rows: 40, cats: 5, babies: 19,
         bgGradient: 'linear-gradient(145deg, #991b1b 0%, #dc2626 52%, #f87171 100%)',
-        wallGradStart: '#fee2e2', wallGradMid: '#f87171', wallGradEnd: '#22d3ee',
-        wallTopColor: '#fecaca', wallSideColor: '#7f1d1d',
-        floorColor: '#09222e', floorAltColor: '#0e3040', contrastHex: '#22d3ee'
+        wallColor: '#dc2626', wallTopColor: '#fecaca', floorColor: '#09222e', floorAltColor: '#0f3445', contrastHex: '#22d3ee', skyHex: '#05151c'
       },
       {
-        level: 19, shapeId: 'crown', shapeName: '皇冠迷宮', cols: 42, rows: 42, cats: 5, babies: 20,
+        level: 19, shapeId: 'crown', shapeName: '皇冠迷宮', colorLabel: '藍系', cols: 42, rows: 42, cats: 5, babies: 20,
         bgGradient: 'linear-gradient(145deg, #1d4ed8 0%, #2563eb 52%, #60a5fa 100%)',
-        wallGradStart: '#dbeafe', wallGradMid: '#60a5fa', wallGradEnd: '#fb923c',
-        wallTopColor: '#bfdbfe', wallSideColor: '#1e3a8a',
-        floorColor: '#171538', floorAltColor: '#211e4f', contrastHex: '#fb923c'
+        wallColor: '#2563eb', wallTopColor: '#bfdbfe', floorColor: '#171538', floorAltColor: '#221f52', contrastHex: '#fb923c', skyHex: '#0f0d26'
       },
       {
-        level: 20, shapeId: 'grand_star', shapeName: '終極八芒星', cols: 44, rows: 44, cats: 5, babies: 21,
+        level: 20, shapeId: 'grand_star', shapeName: '終極八芒星', colorLabel: '黃系', cols: 44, rows: 44, cats: 5, babies: 21,
         bgGradient: 'linear-gradient(145deg, #854d0e 0%, #eab308 52%, #fde047 100%)',
-        wallGradStart: '#fef9c3', wallGradMid: '#fde047', wallGradEnd: '#60a5fa',
-        wallTopColor: '#fef08a', wallSideColor: '#713f12',
-        floorColor: '#141333', floorAltColor: '#1d1b47', contrastHex: '#60a5fa'
+        wallColor: '#eab308', wallTopColor: '#fef9c3', floorColor: '#141333', floorAltColor: '#1f1d4d', contrastHex: '#60a5fa', skyHex: '#0c0b21'
       }
     ];
 
@@ -442,186 +395,135 @@
         this.init();
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
-        [0, 0.08].forEach((offset, idx) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(idx === 0 ? 1420 : 1680, now + offset);
-          osc.frequency.exponentialRampToValueAtTime(idx === 0 ? 2250 : 2580, now + offset + 0.07);
-          gain.gain.setValueAtTime(0.001, now + offset);
-          gain.gain.linearRampToValueAtTime(0.18, now + offset + 0.015);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.075);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(now + offset);
-          osc.stop(now + offset + 0.08);
-        });
-      }
-
-      playSlideWhistle() {
-        if (!this.bgmEnabled) return;
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(450, now);
-        osc.frequency.exponentialRampToValueAtTime(1750, now + 0.19);
-        osc.frequency.exponentialRampToValueAtTime(1020, now + 0.31);
-        gain.gain.setValueAtTime(0.01, now);
-        gain.gain.linearRampToValueAtTime(0.2, now + 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.33);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1050, now);
+        osc.frequency.exponentialRampToValueAtTime(1980, now + 0.08);
+        osc.frequency.exponentialRampToValueAtTime(1350, now + 0.16);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(now);
-        osc.stop(now + 0.34);
+        osc.stop(now + 0.18);
       }
 
-      playCatCrashAndHeaven() {
+      playHeavenAscensionSFX() {
         if (!this.bgmEnabled) return;
         this.init();
         if (!this.ctx) return;
         const now = this.ctx.currentTime;
-
-        const bufferSize = Math.floor(this.ctx.sampleRate * 0.28);
-        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const output = noiseBuffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
-        const whiteNoise = this.ctx.createBufferSource();
-        whiteNoise.buffer = noiseBuffer;
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(3000, now);
-        const noiseGain = this.ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.24, now);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.27);
-        whiteNoise.connect(filter);
-        filter.connect(noiseGain);
-        noiseGain.connect(this.ctx.destination);
-        whiteNoise.start(now);
-
-        const harpNotes = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5, 1174.66, 1318.51, 1567.98, 1760.0, 2093.0];
-        harpNotes.forEach((freq, idx) => {
-          const startT = now + 0.22 + idx * 0.13;
+        const notes = [392.00, 493.88, 587.33, 783.99, 987.77, 1174.66, 1567.98];
+        notes.forEach((freq, i) => {
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, startT);
-          gain.gain.setValueAtTime(0.001, startT);
-          gain.gain.linearRampToValueAtTime(0.12, startT + 0.03);
-          gain.gain.exponentialRampToValueAtTime(0.001, startT + 0.42);
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + i * 0.19);
+          gain.gain.setValueAtTime(0.11, now + i * 0.19);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.19 + 0.65);
           osc.connect(gain);
           gain.connect(this.ctx.destination);
-          osc.start(startT);
-          osc.stop(startT + 0.44);
+          osc.start(now + i * 0.19);
+          osc.stop(now + i * 0.19 + 0.68);
         });
       }
 
-      playFirecrackerPop(delaySec = 0, vol = 0.24) {
+      playLevelClearFanfare() {
         if (!this.bgmEnabled) return;
         this.init();
         if (!this.ctx) return;
-        const startT = this.ctx.currentTime + delaySec;
-        const dur = 0.065;
-        const bufferSize = Math.floor(this.ctx.sampleRate * dur);
-        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = noiseBuffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.22));
-        }
-        const src = this.ctx.createBufferSource();
-        src.buffer = noiseBuffer;
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(1600 + Math.random() * 2800, startT);
-        filter.Q.setValueAtTime(1.1, startT);
-        const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(vol, startT);
-        gain.gain.exponentialRampToValueAtTime(0.001, startT + dur);
-        src.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-        src.start(startT);
+        const now = this.ctx.currentTime;
+        const freqs = [523.25, 659.25, 783.99, 1046.5];
+        freqs.forEach((f, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + i * 0.08);
+          gain.gain.setValueAtTime(0.15, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.32);
+        });
       }
 
-      playBigFireworkBoom(delaySec = 0) {
+      playFirecrackerPop(delay = 0, intensity = 1) {
         if (!this.bgmEnabled) return;
         this.init();
         if (!this.ctx) return;
-        const t = this.ctx.currentTime + delaySec;
-        const osc = this.ctx.createOscillator();
-        const oscGain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(145, t);
-        osc.frequency.exponentialRampToValueAtTime(34, t + 0.35);
-        oscGain.gain.setValueAtTime(0.36, t);
-        oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
-        osc.connect(oscGain);
-        oscGain.connect(this.ctx.destination);
-        osc.start(t);
-        osc.stop(t + 0.4);
-        this.playFirecrackerPop(delaySec + 0.02, 0.28);
-        this.playFirecrackerPop(delaySec + 0.08, 0.16);
-        this.playFirecrackerPop(delaySec + 0.15, 0.12);
+        const now = this.ctx.currentTime + delay;
+        const bufSize = Math.floor(this.ctx.sampleRate * 0.08);
+        const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.18));
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buf;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1400 + Math.random() * 1400, now);
+        filter.Q.setValueAtTime(1.1, now);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.24 * intensity, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(now);
+      }
+
+      playBigFireworkBoom(delay = 0) {
+        if (!this.bgmEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime + delay;
+        const sub = this.ctx.createOscillator();
+        const subGain = this.ctx.createGain();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(140, now);
+        sub.frequency.exponentialRampToValueAtTime(34, now + 0.42);
+        subGain.gain.setValueAtTime(0.32, now);
+        subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        sub.connect(subGain);
+        subGain.connect(this.ctx.destination);
+        sub.start(now);
+        sub.stop(now + 0.46);
+        this.playFirecrackerPop(delay, 1.3);
       }
 
       playFestiveGong() {
         if (!this.bgmEnabled) return;
         this.init();
         if (!this.ctx) return;
-        const t = this.ctx.currentTime;
-        [196.0, 293.66, 392.0, 523.25, 659.25].forEach((freq, idx) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = idx === 0 ? 'triangle' : 'sine';
-          osc.frequency.setValueAtTime(freq, t);
-          osc.frequency.exponentialRampToValueAtTime(freq * 0.985, t + 1.4);
-          gain.gain.setValueAtTime(0.16 / (idx + 1), t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 1.45);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(t);
-          osc.stop(t + 1.5);
-        });
-      }
-
-      playFirecrackerVolley() {
-        if (!this.bgmEnabled) return;
-        this.init();
-        if (!this.ctx) return;
-        this.playFestiveGong();
-        for (let i = 0; i < 34; i++) {
-          const progress = i / 34;
-          const spacing = 0.075 - progress * 0.03;
-          const jitter = (Math.random() - 0.5) * 0.025;
-          this.playFirecrackerPop(0.08 + i * spacing + jitter, 0.18 + progress * 0.12);
-        }
-        this.playBigFireworkBoom(1.9);
-        this.playBigFireworkBoom(2.15);
-      }
-
-      playVictoryFanfare() {
-        if (!this.bgmEnabled) return;
-        this.init();
-        if (!this.ctx) return;
         const now = this.ctx.currentTime;
-        const notes = [523.25, 659.25, 783.99, 1046.5, 987.77, 1046.5];
-        const times = [0, 0.09, 0.18, 0.29, 0.42, 0.53];
-        const durs = [0.08, 0.08, 0.09, 0.11, 0.09, 0.3];
-        notes.forEach((freq, i) => {
+        [196, 293.66, 392, 523.25, 659.25].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(freq, now + times[i]);
-          gain.gain.setValueAtTime(0.01, now + times[i]);
-          gain.gain.linearRampToValueAtTime(0.18, now + times[i] + 0.02);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + times[i] + durs[i]);
+          osc.type = idx % 2 === 0 ? 'triangle' : 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.11 / (idx * 0.4 + 1), now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
           osc.connect(gain);
           gain.connect(this.ctx.destination);
-          osc.start(now + times[i]);
-          osc.stop(now + times[i] + durs[i] + 0.02);
+          osc.start(now);
+          osc.stop(now + 1.45);
         });
+      }
+
+      playDeluxeFirecrackerSalute() {
+        if (!this.bgmEnabled) return;
+        this.playFestiveGong();
+        let t = 0.08;
+        for (let i = 0; i < 34; i++) {
+          this.playFirecrackerPop(t, i > 26 ? 1.25 : 0.85);
+          t += i < 12 ? 0.085 : i < 24 ? 0.055 : 0.036;
+        }
+        this.playBigFireworkBoom(t + 0.06);
+        this.playBigFireworkBoom(t + 0.36);
+        this.playBigFireworkBoom(t + 0.68);
       }
 
       playStepPluck(stepCount) {
@@ -706,7 +608,7 @@
     const sound = new CartoonAudioEngine();
 
     // =========================================================================
-    // 3. ZERO-DEAD-END BRAIDED MAZE ENGINE (100% CONNECTED + MULTI-ROUTE)
+    // 3. ZERO-DEAD-END BRAIDED MAZE ENGINE (20 SHAPES, 100% CONNECTED)
     // =========================================================================
     function isCellInsideShape(r, c, rows, cols, shapeId) {
       const ny = ((r + 0.5) / rows) * 2 - 1;
@@ -806,38 +708,40 @@
               const nr = r + dr, nc = c + dc;
               if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && raw[nr][nc]) cnt++;
             }
-            if (cnt < 2) { raw[r][c] = false; changed = true; }
+            if (cnt < 2) {
+              raw[r][c] = false;
+              changed = true;
+            }
           }
         }
       }
 
       const visited = Array.from({ length: rows }, () => Array(cols).fill(false));
-      let bestComponent = [];
+      let bestComp = [];
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          if (raw[r][c] && !visited[r][c]) {
-            const comp = [];
-            const q = [[r, c]];
-            visited[r][c] = true;
-            while (q.length > 0) {
-              const [cr, cc] = q.shift();
-              comp.push([cr, cc]);
-              for (const [dr, dc] of dirs) {
-                const nr = cr + dr, nc = cc + dc;
-                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && raw[nr][nc] && !visited[nr][nc]) {
-                  visited[nr][nc] = true;
-                  q.push([nr, nc]);
-                }
+          if (!raw[r][c] || visited[r][c]) continue;
+          const comp = [];
+          const q = [[r, c]];
+          visited[r][c] = true;
+          while (q.length) {
+            const [cr, cc] = q.shift();
+            comp.push([cr, cc]);
+            for (const [dr, dc] of dirs) {
+              const nr = cr + dr, nc = cc + dc;
+              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && raw[nr][nc] && !visited[nr][nc]) {
+                visited[nr][nc] = true;
+                q.push([nr, nc]);
               }
             }
-            if (comp.length > bestComponent.length) bestComponent = comp;
           }
+          if (comp.length > bestComp.length) bestComp = comp;
         }
       }
 
-      const validMask = Array.from({ length: rows }, () => Array(cols).fill(false));
-      for (const [r, c] of bestComponent) validMask[r][c] = true;
-      return { validMask, cells: bestComponent };
+      const mask = Array.from({ length: rows }, () => Array(cols).fill(false));
+      for (const [r, c] of bestComp) mask[r][c] = true;
+      return { mask, validCells: bestComp };
     }
 
     function shuffleArray(arr) {
@@ -853,41 +757,43 @@
       const cols = grid[0].length;
       const distMap = Array.from({ length: rows }, () => Array(cols).fill(-1));
       const parentMap = Array.from({ length: rows }, () => Array(cols).fill(null));
-      const r0 = Math.max(0, Math.min(rows - 1, Math.round(startR)));
-      const c0 = Math.max(0, Math.min(cols - 1, Math.round(startC)));
-      const q = [[r0, c0]];
-      distMap[r0][c0] = 0;
-      let reachableCount = 0;
-      const dirDefs = [
-        { dr: -1, dc: 0, wall: 'top' },
-        { dr: 0, dc: 1, wall: 'right' },
-        { dr: 1, dc: 0, wall: 'bottom' },
-        { dr: 0, dc: -1, wall: 'left' }
+      if (!grid[startR] || !grid[startR][startC] || !grid[startR][startC].valid) {
+        return { distMap, parentMap };
+      }
+      const q = [[startR, startC]];
+      distMap[startR][startC] = 0;
+      const dirs = [
+        { dr: -1, dc: 0, w: 'top' },
+        { dr: 0, dc: 1, w: 'right' },
+        { dr: 1, dc: 0, w: 'bottom' },
+        { dr: 0, dc: -1, w: 'left' }
       ];
-      while (q.length > 0) {
-        const [cr, cc] = q.shift();
-        reachableCount++;
-        const cell = grid[cr][cc];
-        for (const d of dirDefs) {
-          if (!cell.walls[d.wall]) {
-            const nr = cr + d.dr, nc = cc + d.dc;
-            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].valid && distMap[nr][nc] === -1) {
-              distMap[nr][nc] = distMap[cr][cc] + 1;
-              parentMap[nr][nc] = [cr, cc];
-              q.push([nr, nc]);
-            }
+      let head = 0;
+      while (head < q.length) {
+        const [r, c] = q[head++];
+        const cell = grid[r][c];
+        for (const d of dirs) {
+          if (cell.walls[d.w]) continue;
+          const nr = r + d.dr, nc = c + d.dc;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].valid && distMap[nr][nc] === -1) {
+            distMap[nr][nc] = distMap[r][c] + 1;
+            parentMap[nr][nc] = [r, c];
+            q.push([nr, nc]);
           }
         }
       }
-      return { distMap, parentMap, reachableCount };
+      return { distMap, parentMap };
     }
 
-    function reconstructPath(parentMap, targetR, targetC) {
+    function reconstructPath(parentMap, startR, startC, endR, endC) {
       const path = [];
-      let curr = [targetR, targetC];
-      while (curr) {
+      let curr = [endR, endC];
+      let guard = 0;
+      while (curr && guard < 4000) {
         path.push(curr);
-        curr = parentMap[curr[0]][curr[1]];
+        if (curr[0] === startR && curr[1] === startC) break;
+        curr = parentMap[curr[0]] && parentMap[curr[0]][curr[1]];
+        guard++;
       }
       return path.reverse();
     }
@@ -898,39 +804,41 @@
 
     function generateShapedMaze(levelSpec) {
       const { rows, cols, shapeId } = levelSpec;
-      const { validMask, cells } = buildConnectedShapeMask(rows, cols, shapeId);
+      const { mask, validCells } = buildConnectedShapeMask(rows, cols, shapeId);
       const grid = Array.from({ length: rows }, (_, r) =>
         Array.from({ length: cols }, (_, c) => ({
-          r, c, valid: validMask[r][c], visited: false,
+          r, c,
+          valid: mask[r][c],
+          visited: false,
           walls: { top: true, right: true, bottom: true, left: true }
         }))
       );
-      if (cells.length === 0) return { grid, validCells: [] };
 
-      const seed = cells[Math.floor(Math.random() * cells.length)];
-      const dirDefs = [
-        { dr: -1, dc: 0, wall: 'top', opp: 'bottom' },
-        { dr: 0, dc: 1, wall: 'right', opp: 'left' },
-        { dr: 1, dc: 0, wall: 'bottom', opp: 'top' },
-        { dr: 0, dc: -1, wall: 'left', opp: 'right' }
+      const dirs = [
+        { dr: -1, dc: 0, w: 'top', opp: 'bottom' },
+        { dr: 0, dc: 1, w: 'right', opp: 'left' },
+        { dr: 1, dc: 0, w: 'bottom', opp: 'top' },
+        { dr: 0, dc: -1, w: 'left', opp: 'right' }
       ];
 
       // 1. Recursive Backtracking Spanning Tree
-      const stack = [seed];
-      grid[seed[0]][seed[1]].visited = true;
+      const startSeed = validCells[Math.floor(validCells.length / 2)];
+      const stack = [startSeed];
+      grid[startSeed[0]][startSeed[1]].visited = true;
+
       while (stack.length > 0) {
-        const [cr, cc] = stack[stack.length - 1];
+        const [r, c] = stack[stack.length - 1];
         const neighbors = [];
-        for (const d of dirDefs) {
-          const nr = cr + d.dr, nc = cc + d.dc;
+        for (const d of dirs) {
+          const nr = r + d.dr, nc = c + d.dc;
           if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].valid && !grid[nr][nc].visited) {
-            neighbors.push({ nr, nc, d });
+            neighbors.push({ nr, nc, w: d.w, opp: d.opp });
           }
         }
         if (neighbors.length > 0) {
           const pick = neighbors[Math.floor(Math.random() * neighbors.length)];
-          grid[cr][cc].walls[pick.d.wall] = false;
-          grid[pick.nr][pick.nc].walls[pick.d.opp] = false;
+          grid[r][c].walls[pick.w] = false;
+          grid[pick.nr][pick.nc].walls[pick.opp] = false;
           grid[pick.nr][pick.nc].visited = true;
           stack.push([pick.nr, pick.nc]);
         } else {
@@ -938,85 +846,63 @@
         }
       }
 
-      // 2. 100% Dead-End Elimination (Zero One-Way Traps!)
-      for (const [r, c] of cells) {
+      // 2. 100% Braided Maze: Remove EVERY dead-end so ZERO one-way traps exist
+      for (const [r, c] of shuffleArray([...validCells])) {
         const cell = grid[r][c];
-        if (countOpenPassages(cell) <= 1) {
-          const closed = [];
-          for (const d of dirDefs) {
-            if (cell.walls[d.wall]) {
-              const nr = r + d.dr, nc = c + d.dc;
-              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].valid) {
-                closed.push({ nr, nc, d, open: countOpenPassages(grid[nr][nc]) });
-              }
-            }
-          }
-          if (closed.length > 0) {
-            closed.sort((a, b) => a.open - b.open);
-            const pick = closed[0];
-            cell.walls[pick.d.wall] = false;
-            grid[pick.nr][pick.nc].walls[pick.d.opp] = false;
+        if (countOpenPassages(cell) < 2) {
+          const closedValid = dirs.filter(d => {
+            const nr = r + d.dr, nc = c + d.dc;
+            return cell.walls[d.w] && nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].valid;
+          });
+          if (closedValid.length > 0) {
+            closedValid.sort((a, b) => countOpenPassages(grid[r + a.dr][c + a.dc]) - countOpenPassages(grid[r + b.dr][c + b.dc]));
+            const chosen = closedValid[0];
+            cell.walls[chosen.w] = false;
+            grid[r + chosen.dr][c + chosen.dc].walls[chosen.opp] = false;
           }
         }
       }
 
-      // 3. Tactical Braiding Loops (20% cross-passages for juking cats)
-      for (const [r, c] of cells) {
-        const cell = grid[r][c];
-        if (countOpenPassages(cell) === 2 && Math.random() < 0.20) {
-          const closed = [];
-          for (const d of dirDefs) {
-            if (cell.walls[d.wall]) {
-              const nr = r + d.dr, nc = c + d.dc;
-              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].valid) {
-                closed.push({ nr, nc, d });
-              }
-            }
-          }
-          if (closed.length > 0) {
-            const pick = closed[Math.floor(Math.random() * closed.length)];
-            cell.walls[pick.d.wall] = false;
-            grid[pick.nr][pick.nc].walls[pick.d.opp] = false;
+      // 3. Extra strategic loops for fun kiting without dash
+      for (const [r, c] of validCells) {
+        if (Math.random() < 0.08) {
+          const cell = grid[r][c];
+          const closedValid = dirs.filter(d => {
+            const nr = r + d.dr, nc = c + d.dc;
+            return cell.walls[d.w] && nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].valid;
+          });
+          if (closedValid.length > 0) {
+            const pick = closedValid[Math.floor(Math.random() * closedValid.length)];
+            cell.walls[pick.w] = false;
+            grid[r + pick.dr][c + pick.dc].walls[pick.opp] = false;
           }
         }
       }
 
-      return { grid, validCells: cells };
+      return { grid, validCells };
     }
 
-    function guaranteeSafeMultiExitSpawn(grid, startR, startC) {
+    function guaranteeSafeMultiExitSpawn(grid, sr, sc) {
       const rows = grid.length, cols = grid[0].length;
-      const dirDefs = [
-        { dr: -1, dc: 0, wall: 'top', opp: 'bottom' },
-        { dr: 0, dc: 1, wall: 'right', opp: 'left' },
-        { dr: 1, dc: 0, wall: 'bottom', opp: 'top' },
-        { dr: 0, dc: -1, wall: 'left', opp: 'right' }
+      const dirs = [
+        { dr: -1, dc: 0, w: 'top', opp: 'bottom' },
+        { dr: 0, dc: 1, w: 'right', opp: 'left' },
+        { dr: 1, dc: 0, w: 'bottom', opp: 'top' },
+        { dr: 0, dc: -1, w: 'left', opp: 'right' }
       ];
-      const hub = [[startR, startC]];
-      for (const d of dirDefs) {
-        const nr = startR + d.dr, nc = startC + d.dc;
+      for (const d of dirs) {
+        const nr = sr + d.dr, nc = sc + d.dc;
         if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].valid) {
-          grid[startR][startC].walls[d.wall] = false;
+          grid[sr][sc].walls[d.w] = false;
           grid[nr][nc].walls[d.opp] = false;
-          hub.push([nr, nc]);
-        }
-      }
-      for (const [cr, cc] of hub) {
-        for (const d of dirDefs) {
-          if (countOpenPassages(grid[cr][cc]) >= 3) break;
-          const nr = cr + d.dr, nc = cc + d.dc;
-          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].valid) {
-            grid[cr][cc].walls[d.wall] = false;
-            grid[nr][nc].walls[d.opp] = false;
-          }
         }
       }
     }
 
     // =========================================================================
-    // 4. GAME STATE (CLEAN SEPARATION OF SPAWN SHIELD vs CHEESE DASH + JUICE FX)
+    // 4. GAME STATE & STORAGE
     // =========================================================================
-    const STORAGE_KEY = 'cat_catch_mouse_ios_v2';
+    const STORAGE_KEY = 'cat_catch_mouse_3d_v1_stats';
     function loadSavedStats() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -1041,14 +927,13 @@
       continuesLeft: Array(LEVELS.length).fill(10),
       score: 0,
       bestScore: loadSavedStats().bestScore || 0,
-      // 3-second Spawn Protection Shield (normal speed)
       shieldUntil: 0,
       stepCounter: 0,
       grid: [],
       validCells: [],
       showBFSOverlay: false,
       bfsPathsToTargets: [],
-      playerBFSMap: null, // Cached BFS distance map from player for smart Cat #0 pursuit & Levels 1-3 guide
+      playerBFSMap: null,
       lastBFSPlayerCell: { r: -1, c: -1 },
       camera: { r: 0, c: 0, visibleSpan: 9 },
       canvasSize: { width: 340, height: 340, left: 0, top: 0 },
@@ -1057,7 +942,6 @@
         active: false, startTime: 0, lastVolleyTime: 0,
         shake: 0, flashAlpha: 0, particles: [], confetti: [], rockets: [], shockwaves: [], strings: []
       },
-      // In-world floating score popups & dust/sparkle particles for App Store polish
       fxParticles: [],
       floatingTexts: [],
       player: {
@@ -1071,12 +955,7 @@
         walkPhase: 0
       },
       virtualStick: { active: false, pointerId: null, originX: 0, originY: 0, currX: 0, currY: 0 },
-      mazeCache: {
-        canvas: document.createElement('canvas'),
-        minimapCanvas: document.createElement('canvas'),
-        cellSize: 48,
-        dirty: true
-      },
+      minimapCache: { canvas: document.createElement('canvas'), dirty: true },
       exitCell: { r: 0, c: 0, unlocked: false },
       babies: [],
       rescuedTrail: [],
@@ -1084,14 +963,15 @@
       lastFrameTime: 0,
       lastTensionUIState: false,
       lastVignetteOpacity: -1,
-      animFrame: null
+      rafId: null
     };
 
-    const canvas = document.getElementById('maze-canvas');
-    const ctx = canvas.getContext('2d');
+    const webglCanvas = document.getElementById('webgl-canvas');
+    const fxCanvas = document.getElementById('fx-canvas');
+    const fxCtx = fxCanvas.getContext('2d');
 
     function isGuideAllowedForCurrentLevel() {
-      return gameState.currentLevelIdx < 3; // Strictly Levels 1–3 only
+      return gameState.currentLevelIdx < 3;
     }
 
     function isPlayerProtected() {
@@ -1105,41 +985,638 @@
       return current + diff * factor;
     }
 
-    function showToast(text, bgClass = 'bg-yellow-300 text-slate-950') {
-      const el = document.getElementById('cartoon-popup');
-      el.textContent = text;
-      el.className = `pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full font-black text-xs shadow-lg transition-opacity duration-150 border border-slate-900 opacity-100 z-30 ${bgClass}`;
-      clearTimeout(el._hideTimer);
-      el._hideTimer = setTimeout(() => {
-        el.classList.remove('opacity-100');
-        el.classList.add('opacity-0');
-      }, 950);
+    // =========================================================================
+    // 5. THREE.JS 3D ENGINE (INSTANCED ARCHITECTURAL MAZE + SCULPTED CHARACTERS)
+    // =========================================================================
+    const engine3D = {
+      available: typeof THREE !== 'undefined',
+      renderer: null,
+      scene: null,
+      camera: null,
+      levelGroup: null,
+      ambientLight: null,
+      dirLight: null,
+      playerLight: null,
+      playerMesh: null,
+      playerShieldMesh: null,
+      playerAngelGroup: null,
+      heavenBeamMesh: null,
+      babyMeshes: [],
+      catMeshes: [],
+      exitGroup: null,
+      exitRing1: null,
+      exitRing2: null,
+      exitBeam: null,
+      exitPadMat: null,
+      guideGroup: null,
+      particleGroup: null,
+      particlePool: [],
+      disposables: []
+    };
+
+    function init3DEngine() {
+      if (!engine3D.available) return;
+      try {
+        engine3D.renderer = new THREE.WebGLRenderer({
+          canvas: webglCanvas,
+          antialias: true,
+          alpha: false,
+          powerPreference: 'high-performance'
+        });
+        engine3D.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        engine3D.renderer.shadowMap.enabled = true;
+        engine3D.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      } catch (_) {
+        engine3D.available = false;
+        return;
+      }
+
+      engine3D.scene = new THREE.Scene();
+      engine3D.scene.background = new THREE.Color('#0f172a');
+      engine3D.scene.fog = new THREE.FogExp2('#0f172a', 0.022);
+
+      engine3D.camera = new THREE.PerspectiveCamera(46, 1, 0.1, 180);
+
+      // Balanced studio 3D lighting
+      engine3D.ambientLight = new THREE.HemisphereLight('#ffffff', '#1e293b', 0.85);
+      engine3D.scene.add(engine3D.ambientLight);
+
+      engine3D.dirLight = new THREE.DirectionalLight('#fff8eb', 0.92);
+      engine3D.dirLight.position.set(12, 24, 14);
+      engine3D.dirLight.castShadow = true;
+      engine3D.dirLight.shadow.mapSize.width = 1024;
+      engine3D.dirLight.shadow.mapSize.height = 1024;
+      engine3D.dirLight.shadow.camera.near = 2;
+      engine3D.dirLight.shadow.camera.far = 65;
+      const d = 14;
+      engine3D.dirLight.shadow.camera.left = -d;
+      engine3D.dirLight.shadow.camera.right = d;
+      engine3D.dirLight.shadow.camera.top = d;
+      engine3D.dirLight.shadow.camera.bottom = -d;
+      engine3D.scene.add(engine3D.dirLight);
+      engine3D.scene.add(engine3D.dirLight.target);
+
+      engine3D.playerLight = new THREE.PointLight('#fde68a', 0.85, 7.5);
+      engine3D.scene.add(engine3D.playerLight);
+
+      engine3D.levelGroup = new THREE.Group();
+      engine3D.scene.add(engine3D.levelGroup);
+
+      engine3D.guideGroup = new THREE.Group();
+      engine3D.scene.add(engine3D.guideGroup);
+
+      engine3D.particleGroup = new THREE.Group();
+      engine3D.scene.add(engine3D.particleGroup);
     }
 
-    function spawnWorldJuice(r, c, color, count = 10, floatingLabel = null) {
+    function dispose3DLevel() {
+      if (!engine3D.available || !engine3D.levelGroup) return;
+      while (engine3D.levelGroup.children.length > 0) {
+        engine3D.levelGroup.remove(engine3D.levelGroup.children[0]);
+      }
+      while (engine3D.guideGroup.children.length > 0) {
+        engine3D.guideGroup.remove(engine3D.guideGroup.children[0]);
+      }
+      while (engine3D.particleGroup.children.length > 0) {
+        engine3D.particleGroup.remove(engine3D.particleGroup.children[0]);
+      }
+      for (const item of engine3D.disposables) {
+        if (item && typeof item.dispose === 'function') item.dispose();
+      }
+      engine3D.disposables = [];
+      engine3D.babyMeshes = [];
+      engine3D.catMeshes = [];
+      engine3D.particlePool = [];
+      engine3D.particleInst = null;
+      engine3D.playerMesh = null;
+      engine3D.playerShieldMesh = null;
+      engine3D.playerAngelGroup = null;
+      engine3D.heavenBeamMesh = null;
+      engine3D.exitGroup = null;
+    }
+
+    function track3D(resource) {
+      engine3D.disposables.push(resource);
+      return resource;
+    }
+
+    function buildSculpted3DMouse(isMother, contrastHex) {
+      const group = new THREE.Group();
+      const scale = isMother ? 1.0 : 0.64;
+      group.scale.set(scale, scale, scale);
+
+      const furMain = track3D(new THREE.MeshStandardMaterial({
+        color: isMother ? '#f59e0b' : '#fde047',
+        roughness: 0.42,
+        metalness: 0.06
+      }));
+      const furDark = track3D(new THREE.MeshStandardMaterial({
+        color: isMother ? '#b45309' : '#eab308',
+        roughness: 0.5
+      }));
+      const pinkMat = track3D(new THREE.MeshStandardMaterial({ color: '#fda4af', roughness: 0.45 }));
+      const eyeMat = track3D(new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.12, metalness: 0.3 }));
+      const whiteMat = track3D(new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.2 }));
+
+      // Plump sculpted body (faces +X locally so rotation.y = -angle aligns with (dr, dc))
+      const bodyGeo = track3D(new THREE.SphereGeometry(0.26, 18, 14));
+      const body = new THREE.Mesh(bodyGeo, furMain);
+      body.scale.set(1.22, 0.88, 0.92);
+      body.position.set(-0.04, 0.24, 0);
+      body.castShadow = true;
+      group.add(body);
+
+      // Head + tapered snout
+      const headGeo = track3D(new THREE.SphereGeometry(0.18, 16, 14));
+      const head = new THREE.Mesh(headGeo, furMain);
+      head.scale.set(1.18, 0.95, 0.96);
+      head.position.set(0.20, 0.30, 0);
+      head.castShadow = true;
+      group.add(head);
+
+      const noseGeo = track3D(new THREE.SphereGeometry(0.052, 12, 10));
+      const nose = new THREE.Mesh(noseGeo, pinkMat);
+      nose.position.set(0.41, 0.29, 0);
+      group.add(nose);
+
+      // Big round sculpted ears + pink inner ear
+      const earOuterGeo = track3D(new THREE.CylinderGeometry(0.12, 0.12, 0.036, 16));
+      const earInnerGeo = track3D(new THREE.CylinderGeometry(0.075, 0.075, 0.042, 14));
+      [-1, 1].forEach(side => {
+        const ear = new THREE.Mesh(earOuterGeo, furDark);
+        ear.rotation.z = Math.PI / 2;
+        ear.rotation.y = side * 0.28;
+        ear.position.set(0.14, 0.47, side * 0.16);
+        ear.castShadow = true;
+        group.add(ear);
+
+        const inner = new THREE.Mesh(earInnerGeo, pinkMat);
+        inner.rotation.z = Math.PI / 2;
+        inner.rotation.y = side * 0.28;
+        inner.position.set(0.148, 0.47, side * 0.16);
+        group.add(inner);
+
+        // Eyes with white catchlight
+        const eye = new THREE.Mesh(track3D(new THREE.SphereGeometry(0.036, 10, 8)), eyeMat);
+        eye.position.set(0.32, 0.36, side * 0.088);
+        group.add(eye);
+        const glint = new THREE.Mesh(track3D(new THREE.SphereGeometry(0.013, 8, 6)), whiteMat);
+        glint.position.set(0.348, 0.375, side * 0.085);
+        group.add(glint);
+      });
+
+      // Articulated paws
+      const pawGeo = track3D(new THREE.SphereGeometry(0.06, 10, 8));
+      const paws = [];
+      [
+        [0.14, 0.07, 0.14], [0.14, 0.07, -0.14],
+        [-0.18, 0.07, 0.14], [-0.18, 0.07, -0.14]
+      ].forEach(([px, py, pz]) => {
+        const paw = new THREE.Mesh(pawGeo, pinkMat);
+        paw.scale.set(1.2, 0.7, 0.9);
+        paw.position.set(px, py, pz);
+        group.add(paw);
+        paws.push(paw);
+      });
+
+      // Wagging sculpted pink tail
+      const tailPivot = new THREE.Group();
+      tailPivot.position.set(-0.32, 0.20, 0);
+      const tailGeo = track3D(new THREE.CylinderGeometry(0.016, 0.032, 0.38, 10));
+      const tail = new THREE.Mesh(tailGeo, pinkMat);
+      tail.rotation.z = Math.PI / 2 + 0.35;
+      tail.position.set(-0.16, 0.06, 0);
+      tailPivot.add(tail);
+      group.add(tailPivot);
+
+      // Subtle glowing beacon ring under baby mice before rescue
+      let beaconRing = null;
+      if (!isMother) {
+        const ringGeo = track3D(new THREE.RingGeometry(0.30, 0.40, 24));
+        const ringMat = track3D(new THREE.MeshBasicMaterial({
+          color: '#fde047',
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.78
+        }));
+        beaconRing = new THREE.Mesh(ringGeo, ringMat);
+        beaconRing.rotation.x = -Math.PI / 2;
+        beaconRing.position.y = 0.03;
+        group.add(beaconRing);
+      }
+
+      // Mother Mouse extras: 3D Spawn Shield Dome + 3D Angel Wings & Halo (for 2s heaven ascension)
+      let shieldDome = null;
+      let angelGroup = null;
+      if (isMother) {
+        const shieldGeo = track3D(new THREE.SphereGeometry(0.50, 22, 16));
+        const shieldMat = track3D(new THREE.MeshBasicMaterial({
+          color: '#22d3ee',
+          transparent: true,
+          opacity: 0.24,
+          wireframe: false
+        }));
+        shieldDome = new THREE.Mesh(shieldGeo, shieldMat);
+        shieldDome.position.y = 0.28;
+        group.add(shieldDome);
+
+        angelGroup = new THREE.Group();
+        angelGroup.visible = false;
+        const haloGeo = track3D(new THREE.TorusGeometry(0.18, 0.028, 10, 24));
+        const haloMat = track3D(new THREE.MeshBasicMaterial({ color: '#fde047' }));
+        const halo = new THREE.Mesh(haloGeo, haloMat);
+        halo.rotation.x = Math.PI / 2;
+        halo.position.set(0.08, 0.72, 0);
+        angelGroup.add(halo);
+
+        const wingGeo = track3D(new THREE.SphereGeometry(0.22, 12, 10));
+        const wingMat = track3D(new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.92 }));
+        const leftWing = new THREE.Mesh(wingGeo, wingMat);
+        leftWing.scale.set(0.9, 0.22, 1.5);
+        leftWing.position.set(-0.06, 0.38, -0.28);
+        const rightWing = new THREE.Mesh(wingGeo, wingMat);
+        rightWing.scale.set(0.9, 0.22, 1.5);
+        rightWing.position.set(-0.06, 0.38, 0.28);
+        angelGroup.add(leftWing, rightWing);
+        angelGroup.userData = { leftWing, rightWing };
+        group.add(angelGroup);
+      }
+
+      group.userData = { paws, tailPivot, beaconRing, shieldDome, angelGroup };
+      return group;
+    }
+
+    function buildSculpted3DCat(catIndex) {
+      const coats = [
+        { main: '#64748b', stripe: '#334155', belly: '#e2e8f0' }, // Classic Tom Blue-Grey
+        { main: '#ea580c', stripe: '#9a3412', belly: '#ffedd5' }, // Ginger Tabby
+        { main: '#334155', stripe: '#0f172a', belly: '#f8fafc' }, // Tuxedo Charcoal
+        { main: '#d97706', stripe: '#78350f', belly: '#fef3c7' }, // Golden Tiger
+        { main: '#7c3aed', stripe: '#4c1d95', belly: '#ede9fe' }  // Royal Violet Cat
+      ];
+      const palette = coats[catIndex % coats.length];
+      const group = new THREE.Group();
+
+      const mainMat = track3D(new THREE.MeshStandardMaterial({ color: palette.main, roughness: 0.45 }));
+      const stripeMat = track3D(new THREE.MeshStandardMaterial({ color: palette.stripe, roughness: 0.5 }));
+      const bellyMat = track3D(new THREE.MeshStandardMaterial({ color: palette.belly, roughness: 0.45 }));
+      const pinkMat = track3D(new THREE.MeshStandardMaterial({ color: '#fb7185', roughness: 0.4 }));
+      const eyeMat = track3D(new THREE.MeshStandardMaterial({
+        color: '#a3e635',
+        emissive: '#65a30d',
+        emissiveIntensity: 0.65,
+        roughness: 0.15
+      }));
+
+      // Sleek sculpted feline body
+      const body = new THREE.Mesh(track3D(new THREE.SphereGeometry(0.28, 18, 14)), mainMat);
+      body.scale.set(1.38, 0.90, 0.88);
+      body.position.set(-0.04, 0.28, 0);
+      body.castShadow = true;
+      group.add(body);
+
+      // Chest ruff
+      const chest = new THREE.Mesh(track3D(new THREE.SphereGeometry(0.18, 14, 12)), bellyMat);
+      chest.position.set(0.22, 0.24, 0);
+      group.add(chest);
+
+      // Head
+      const head = new THREE.Mesh(track3D(new THREE.SphereGeometry(0.21, 16, 14)), mainMat);
+      head.scale.set(1.06, 0.96, 1.04);
+      head.position.set(0.25, 0.40, 0);
+      head.castShadow = true;
+      group.add(head);
+
+      // Pointed triangular feline ears
+      const earGeo = track3D(new THREE.ConeGeometry(0.085, 0.19, 4));
+      [-1, 1].forEach(side => {
+        const ear = new THREE.Mesh(earGeo, stripeMat);
+        ear.position.set(0.22, 0.61, side * 0.12);
+        ear.rotation.x = side * 0.22;
+        ear.castShadow = true;
+        group.add(ear);
+
+        const eye = new THREE.Mesh(track3D(new THREE.SphereGeometry(0.046, 10, 8)), eyeMat);
+        eye.position.set(0.42, 0.44, side * 0.088);
+        group.add(eye);
+      });
+
+      // Nose
+      const nose = new THREE.Mesh(track3D(new THREE.SphereGeometry(0.04, 10, 8)), pinkMat);
+      nose.position.set(0.46, 0.37, 0);
+      group.add(nose);
+
+      // Striding legs
+      const legGeo = track3D(new THREE.CylinderGeometry(0.046, 0.042, 0.22, 10));
+      const legs = [];
+      [
+        [0.16, 0.11, 0.14], [0.16, 0.11, -0.14],
+        [-0.22, 0.11, 0.14], [-0.22, 0.11, -0.14]
+      ].forEach(([lx, ly, lz]) => {
+        const leg = new THREE.Mesh(legGeo, stripeMat);
+        leg.position.set(lx, ly, lz);
+        group.add(leg);
+        legs.push(leg);
+      });
+
+      // Upright swishing tail
+      const tailPivot = new THREE.Group();
+      tailPivot.position.set(-0.36, 0.28, 0);
+      const tail = new THREE.Mesh(track3D(new THREE.CylinderGeometry(0.028, 0.042, 0.44, 10)), stripeMat);
+      tail.rotation.z = 0.45;
+      tail.position.set(-0.08, 0.20, 0);
+      tailPivot.add(tail);
+      group.add(tailPivot);
+
+      // Floating 3D Red Alert Crystal (!) when chasing closely
+      const alertGroup = new THREE.Group();
+      alertGroup.position.set(0.20, 0.92, 0);
+      const alertMat = track3D(new THREE.MeshBasicMaterial({ color: '#ef4444' }));
+      const alertBar = new THREE.Mesh(track3D(new THREE.BoxGeometry(0.07, 0.22, 0.07)), alertMat);
+      alertBar.position.y = 0.08;
+      const alertDot = new THREE.Mesh(track3D(new THREE.SphereGeometry(0.045, 8, 8)), alertMat);
+      alertDot.position.y = -0.09;
+      alertGroup.add(alertBar, alertDot);
+      alertGroup.visible = false;
+      group.add(alertGroup);
+
+      group.userData = { legs, tailPivot, eyeMat, alertGroup };
+      return group;
+    }
+
+    function build3DLevelScene() {
+      if (!engine3D.available) return;
+      dispose3DLevel();
+
+      const spec = LEVELS[gameState.currentLevelIdx];
+      const { grid, validCells, exitCell, babies, cats } = gameState;
+      const rows = grid.length, cols = grid[0].length;
+
+      engine3D.scene.background = new THREE.Color(spec.skyHex);
+      engine3D.scene.fog = new THREE.FogExp2(spec.skyHex, 0.018);
+
+      // 1. Instanced 3D Floor Tiles (2 alternating materials for crisp architectural checkerboard)
+      const floorGeo = track3D(new THREE.BoxGeometry(0.97, 0.14, 0.97));
+      const floorMatA = track3D(new THREE.MeshStandardMaterial({ color: spec.floorColor, roughness: 0.72, metalness: 0.08 }));
+      const floorMatB = track3D(new THREE.MeshStandardMaterial({ color: spec.floorAltColor, roughness: 0.72, metalness: 0.08 }));
+
+      const cellsA = [], cellsB = [];
+      for (const [r, c] of validCells) {
+        if ((r + c) % 2 === 0) cellsA.push([r, c]);
+        else cellsB.push([r, c]);
+      }
+
+      const dummy = new THREE.Object3D();
+      if (cellsA.length > 0) {
+        const instA = new THREE.InstancedMesh(floorGeo, floorMatA, cellsA.length);
+        instA.receiveShadow = true;
+        cellsA.forEach(([r, c], i) => {
+          dummy.position.set(c, -0.07, r);
+          dummy.scale.set(1, 1, 1);
+          dummy.rotation.set(0, 0, 0);
+          dummy.updateMatrix();
+          instA.setMatrixAt(i, dummy.matrix);
+        });
+        engine3D.levelGroup.add(instA);
+      }
+      if (cellsB.length > 0) {
+        const instB = new THREE.InstancedMesh(floorGeo, floorMatB, cellsB.length);
+        instB.receiveShadow = true;
+        cellsB.forEach(([r, c], i) => {
+          dummy.position.set(c, -0.07, r);
+          dummy.scale.set(1, 1, 1);
+          dummy.rotation.set(0, 0, 0);
+          dummy.updateMatrix();
+          instB.setMatrixAt(i, dummy.matrix);
+        });
+        engine3D.levelGroup.add(instB);
+      }
+
+      // 2. Collect unique 3D Wall Segments (horizontal & vertical) + Corner Pillars for InstancedMesh
+      const hWallKeys = new Set();
+      const vWallKeys = new Set();
+      const pillarKeys = new Set();
+      const hWalls = [], vWalls = [], pillars = [];
+
+      const addPillar = (pr, pc) => {
+        const k = `${pr},${pc}`;
+        if (!pillarKeys.has(k)) { pillarKeys.add(k); pillars.push([pr, pc]); }
+      };
+
+      for (const [r, c] of validCells) {
+        const w = grid[r][c].walls;
+        if (w.top) {
+          const k = `${r},${c}`;
+          if (!hWallKeys.has(k)) { hWallKeys.add(k); hWalls.push([r - 0.5, c]); addPillar(r - 0.5, c - 0.5); addPillar(r - 0.5, c + 0.5); }
+        }
+        if (w.bottom) {
+          const k = `${r + 1},${c}`;
+          if (!hWallKeys.has(k)) { hWallKeys.add(k); hWalls.push([r + 0.5, c]); addPillar(r + 0.5, c - 0.5); addPillar(r + 0.5, c + 0.5); }
+        }
+        if (w.left) {
+          const k = `${r},${c}`;
+          if (!vWallKeys.has(k)) { vWallKeys.add(k); vWalls.push([r, c - 0.5]); addPillar(r - 0.5, c - 0.5); addPillar(r + 0.5, c - 0.5); }
+        }
+        if (w.right) {
+          const k = `${r},${c + 1}`;
+          if (!vWallKeys.has(k)) { vWallKeys.add(k); vWalls.push([r, c + 0.5]); addPillar(r - 0.5, c + 0.5); addPillar(r + 0.5, c + 0.5); }
+        }
+      }
+
+      const wallHeight = 0.66;
+      const wallThick = 0.16;
+      const wallBodyMat = track3D(new THREE.MeshStandardMaterial({ color: spec.wallColor, roughness: 0.42, metalness: 0.12 }));
+      const wallCapMat = track3D(new THREE.MeshStandardMaterial({ color: spec.wallTopColor, roughness: 0.25, metalness: 0.15 }));
+
+      // Horizontal + Vertical walls combined into 2 InstancedMeshes (body + glossy top cap)
+      const totalWalls = hWalls.length + vWalls.length;
+      if (totalWalls > 0) {
+        const segBodyGeo = track3D(new THREE.BoxGeometry(1.0, wallHeight, wallThick));
+        const segCapGeo = track3D(new THREE.BoxGeometry(1.02, 0.08, wallThick + 0.03));
+        const instBody = new THREE.InstancedMesh(segBodyGeo, wallBodyMat, totalWalls);
+        const instCap = new THREE.InstancedMesh(segCapGeo, wallCapMat, totalWalls);
+        instBody.castShadow = true;
+        instBody.receiveShadow = true;
+
+        let idx = 0;
+        for (const [wr, wc] of hWalls) {
+          dummy.position.set(wc, wallHeight / 2, wr);
+          dummy.rotation.set(0, 0, 0);
+          dummy.scale.set(1, 1, 1);
+          dummy.updateMatrix();
+          instBody.setMatrixAt(idx, dummy.matrix);
+
+          dummy.position.set(wc, wallHeight + 0.03, wr);
+          dummy.updateMatrix();
+          instCap.setMatrixAt(idx, dummy.matrix);
+          idx++;
+        }
+        for (const [wr, wc] of vWalls) {
+          dummy.position.set(wc, wallHeight / 2, wr);
+          dummy.rotation.set(0, Math.PI / 2, 0);
+          dummy.scale.set(1, 1, 1);
+          dummy.updateMatrix();
+          instBody.setMatrixAt(idx, dummy.matrix);
+
+          dummy.position.set(wc, wallHeight + 0.03, wr);
+          dummy.updateMatrix();
+          instCap.setMatrixAt(idx, dummy.matrix);
+          idx++;
+        }
+        engine3D.levelGroup.add(instBody, instCap);
+      }
+
+      // Corner Architectural Pillars
+      if (pillars.length > 0) {
+        const pilGeo = track3D(new THREE.BoxGeometry(wallThick + 0.05, wallHeight + 0.10, wallThick + 0.05));
+        const instPil = new THREE.InstancedMesh(pilGeo, wallCapMat, pillars.length);
+        pillars.forEach(([pr, pc], i) => {
+          dummy.position.set(pc, (wallHeight + 0.10) / 2, pr);
+          dummy.rotation.set(0, 0, 0);
+          dummy.scale.set(1, 1, 1);
+          dummy.updateMatrix();
+          instPil.setMatrixAt(i, dummy.matrix);
+        });
+        engine3D.levelGroup.add(instPil);
+      }
+
+      // 3. 3D Exit Portal (Recessed pad + Twin Rotating Energy Rings + Vertical Beacon Beam)
+      const exitGroup = new THREE.Group();
+      exitGroup.position.set(exitCell.c, 0, exitCell.r);
+      const padMat = track3D(new THREE.MeshStandardMaterial({
+        color: '#64748b',
+        emissive: '#334155',
+        emissiveIntensity: 0.4,
+        roughness: 0.3
+      }));
+      const pad = new THREE.Mesh(track3D(new THREE.CylinderGeometry(0.42, 0.46, 0.08, 24)), padMat);
+      pad.position.y = 0.04;
+      exitGroup.add(pad);
+
+      const ringMat = track3D(new THREE.MeshBasicMaterial({ color: '#94a3b8' }));
+      const ring1 = new THREE.Mesh(track3D(new THREE.TorusGeometry(0.36, 0.035, 10, 28)), ringMat);
+      ring1.position.y = 0.45;
+      const ring2 = new THREE.Mesh(track3D(new THREE.TorusGeometry(0.26, 0.028, 10, 24)), ringMat);
+      ring2.position.y = 0.45;
+      ring2.rotation.y = Math.PI / 2;
+      exitGroup.add(ring1, ring2);
+
+      const beamMat = track3D(new THREE.MeshBasicMaterial({
+        color: '#34d399',
+        transparent: true,
+        opacity: 0.22,
+        side: THREE.DoubleSide
+      }));
+      const beam = new THREE.Mesh(track3D(new THREE.CylinderGeometry(0.26, 0.36, 4.5, 16, 1, true)), beamMat);
+      beam.position.y = 2.25;
+      beam.visible = false;
+      exitGroup.add(beam);
+
+      engine3D.exitGroup = exitGroup;
+      engine3D.exitRing1 = ring1;
+      engine3D.exitRing2 = ring2;
+      engine3D.exitBeam = beam;
+      engine3D.exitPadMat = padMat;
+      engine3D.exitRingMat = ringMat;
+      engine3D.levelGroup.add(exitGroup);
+
+      // 4. Mother Mouse + Heaven Spotlight Beam
+      engine3D.playerMesh = buildSculpted3DMouse(true, spec.contrastHex);
+      engine3D.playerShieldMesh = engine3D.playerMesh.userData.shieldDome;
+      engine3D.playerAngelGroup = engine3D.playerMesh.userData.angelGroup;
+      engine3D.levelGroup.add(engine3D.playerMesh);
+
+      const hBeamMat = track3D(new THREE.MeshBasicMaterial({
+        color: '#fef08a',
+        transparent: true,
+        opacity: 0.26,
+        side: THREE.DoubleSide
+      }));
+      engine3D.heavenBeamMesh = new THREE.Mesh(track3D(new THREE.CylinderGeometry(0.55, 0.85, 7.0, 20, 1, true)), hBeamMat);
+      engine3D.heavenBeamMesh.visible = false;
+      engine3D.levelGroup.add(engine3D.heavenBeamMesh);
+
+      // 5. Baby Mice
+      engine3D.babyMeshes = babies.map((b) => {
+        const mesh = buildSculpted3DMouse(false, spec.contrastHex);
+        mesh.position.set(b.c, 0, b.r);
+        engine3D.levelGroup.add(mesh);
+        return mesh;
+      });
+
+      // 6. Patrol Cats
+      engine3D.catMeshes = cats.map((cat, idx) => {
+        const mesh = buildSculpted3DCat(idx);
+        mesh.position.set(cat.c, 0, cat.r);
+        engine3D.levelGroup.add(mesh);
+        return mesh;
+      });
+
+      // 7. Pooled 3D Sparkle & Dust Particle InstancedMesh (1 draw call)
+      const pGeo = track3D(new THREE.SphereGeometry(0.08, 8, 6));
+      const pMat = track3D(new THREE.MeshBasicMaterial({ color: '#fde047' }));
+      engine3D.particleInst = new THREE.InstancedMesh(pGeo, pMat, 48);
+      engine3D.particleInst.count = 0;
+      engine3D.particleGroup.add(engine3D.particleInst);
+
+      rebuild3DGuideOrbs();
+    }
+
+    function rebuild3DGuideOrbs() {
+      if (!engine3D.available || !engine3D.guideGroup) return;
+      while (engine3D.guideGroup.children.length > 0) {
+        engine3D.guideGroup.remove(engine3D.guideGroup.children[0]);
+      }
+      if (!gameState.showBFSOverlay || !isGuideAllowedForCurrentLevel()) return;
+      if (!gameState.bfsPathsToTargets.length) return;
+
+      const orbGeo = track3D(new THREE.SphereGeometry(0.11, 10, 8));
+      const orbMat = track3D(new THREE.MeshBasicMaterial({ color: '#fef08a' }));
+      const path = gameState.bfsPathsToTargets[0];
+      for (let i = 1; i < path.length; i++) {
+        const [r, c] = path[i];
+        const orb = new THREE.Mesh(orbGeo, orbMat);
+        orb.position.set(c, 0.24, r);
+        engine3D.guideGroup.add(orb);
+      }
+    }
+
+    // =========================================================================
+    // 6. MINIMALIST UI HELPERS & HOME MENU (SESSION RESUME)
+    // =========================================================================
+    let toastTimer = null;
+    function showToast(msg, cls = 'bg-amber-400 text-slate-950') {
+      const el = document.getElementById('cartoon-popup');
+      el.textContent = msg;
+      el.className = `pointer-events-none absolute top-2.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full font-black text-xs shadow-lg whitespace-nowrap z-20 ${cls}`;
+      el.style.opacity = '1';
+      el.style.transform = 'translateX(-50%) scale(1)';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(-50%) scale(0.75)';
+      }, 1350);
+    }
+
+    function spawnWorldJuice(r, c, color, count = 10, text = null) {
       for (let i = 0; i < count; i++) {
         const ang = Math.random() * Math.PI * 2;
-        const spd = 1.2 + Math.random() * 2.6;
+        const spd = 1.2 + Math.random() * 2.2;
         gameState.fxParticles.push({
-          r, c,
+          r, c, y: 0.25,
           vr: Math.sin(ang) * spd,
           vc: Math.cos(ang) * spd,
-          size: 2.2 + Math.random() * 2.5,
-          life: 0.35 + Math.random() * 0.25,
-          maxLife: 0.6,
+          vy: 1.5 + Math.random() * 1.8,
+          life: 0.45 + Math.random() * 0.25,
+          maxLife: 0.70,
           color
         });
       }
-      if (floatingLabel) {
-        gameState.floatingTexts.push({
-          r, c, text: floatingLabel, color, life: 0.9, maxLife: 0.9
-        });
+      if (text) {
+        gameState.floatingTexts.push({ r: r - 0.15, c, text, color, life: 0.95, maxLife: 0.95 });
       }
     }
 
-    // =========================================================================
-    // 5. HOME MENU & OVERLAY TRANSITIONS (PRESERVES MID-GAME SESSION!)
-    // =========================================================================
     function openHomeMenuScreen() {
       stopLoops();
       gameState.status = 'home_menu';
@@ -1147,27 +1624,17 @@
       highlightActiveDpadButton(null, 0, 0);
       gameState.player.heldDir = null;
       gameState.player.bufferedDir = null;
-      gameState.virtualStick.active = false;
-      highlightActiveDpadButton(null, 0, 0);
+      sound.stopChaseBGM();
       hideOverlay();
-
-      const homeScreen = document.getElementById('home-menu-screen');
-      homeScreen.classList.remove('hidden');
-      homeScreen.classList.add('flex');
       renderHomeMenuUI();
-      renderMazeFrame();
+      document.getElementById('home-menu-screen').classList.remove('hidden');
     }
 
     function closeHomeMenuAndPlay() {
-      const homeScreen = document.getElementById('home-menu-screen');
-      homeScreen.classList.add('hidden');
-      homeScreen.classList.remove('flex');
+      document.getElementById('home-menu-screen').classList.add('hidden');
       sound.init();
-      resizeCanvas();
-
-      // Resume current level seamlessly if session already active, otherwise start fresh!
       if (gameState.hasActiveSession && gameState.grid.length > 0 && gameState.lives > 0) {
-        startGameplay(false);
+        startGameplay();
       } else {
         loadLevel(gameState.currentLevelIdx, true, true);
       }
@@ -1176,135 +1643,70 @@
     function renderHomeMenuUI() {
       const spec = LEVELS[gameState.currentLevelIdx];
       document.getElementById('home-level-label').textContent = `第 ${spec.level} / ${LEVELS.length} 關 · ${spec.shapeName}`;
-      document.getElementById('home-best-score').textContent = `${gameState.bestScore} 分`;
+      document.getElementById('home-best-score').textContent = String(Math.max(gameState.bestScore, gameState.score));
+      document.getElementById('home-cam-label').textContent = `${gameState.camera.visibleSpan}×${gameState.camera.visibleSpan}`;
+      document.getElementById('home-slider-cam').value = gameState.camera.visibleSpan;
+      document.getElementById('home-audio-icon').textContent = sound.bgmEnabled ? '🔊' : '🔇';
+      document.getElementById('home-audio-text').textContent = sound.bgmEnabled ? '開啟' : '靜音';
       document.getElementById('btn-StartFromHome-text').textContent =
         gameState.hasActiveSession ? `繼續第 ${spec.level} 關` : (spec.level === 1 ? '開始遊戲' : `開始第 ${spec.level} 關`);
-      document.getElementById('home-audio-icon').textContent = sound.bgmEnabled ? '🔊' : '🔇';
-      document.getElementById('home-audio-text').textContent = sound.bgmEnabled ? '音效：開' : '音效：關';
     }
 
     function hideOverlay() {
-      const overlay = document.getElementById('canvas-overlay');
-      overlay.className = 'absolute inset-0 bg-slate-950/90 hidden flex-col items-center justify-center p-4 text-center z-20';
+      document.getElementById('canvas-overlay').classList.add('hidden');
     }
 
-    function showOverlayBox() {
-      const overlay = document.getElementById('canvas-overlay');
-      overlay.classList.remove('hidden');
-      overlay.classList.add('flex');
+    function showOverlayBox(emoji, title, desc, primaryText, primaryAction, secondaryText = null, secondaryAction = null) {
+      document.getElementById('overlay-emoji').textContent = emoji;
+      document.getElementById('overlay-title').textContent = title;
+      document.getElementById('overlay-desc').textContent = desc;
+      const pBtn = document.getElementById('btn-OverlayPrimary');
+      pBtn.textContent = primaryText;
+      pBtn.onclick = primaryAction;
+      const sBtn = document.getElementById('btn-OverlaySecondary');
+      if (secondaryText && secondaryAction) {
+        sBtn.textContent = secondaryText;
+        sBtn.onclick = secondaryAction;
+        sBtn.classList.remove('hidden');
+      } else {
+        sBtn.classList.add('hidden');
+      }
+      document.getElementById('canvas-overlay').classList.remove('hidden');
     }
 
     // =========================================================================
-    // 6. STATIC MAZE & MINIMAP OFFSCREEN CACHE (ARCHITECTURAL 3D BEVEL WALLS)
+    // 7. MINIMAP CACHE & BFS UPDATE
     // =========================================================================
-    function rebuildStaticMazeCache() {
+    function rebuildMinimapCache() {
       const spec = LEVELS[gameState.currentLevelIdx];
-      const { grid, mazeCache } = gameState;
-      if (!grid.length) return;
-
-      const rows = spec.rows, cols = spec.cols, cs = mazeCache.cellSize;
-      const offCanvas = mazeCache.canvas;
-      offCanvas.width = cols * cs;
-      offCanvas.height = rows * cs;
-      const octx = offCanvas.getContext('2d');
-      octx.clearRect(0, 0, offCanvas.width, offCanvas.height);
-
-      // 1. Handcrafted checkerboard tile floor + subtle inner tile highlight
+      const { grid } = gameState;
+      const rows = grid.length, cols = grid[0].length;
+      const mini = gameState.minimapCache.canvas;
+      const miniSize = 96;
+      mini.width = miniSize;
+      mini.height = miniSize;
+      const mctx = mini.getContext('2d');
+      mctx.clearRect(0, 0, miniSize, miniSize);
+      mctx.fillStyle = 'rgba(10, 15, 30, 0.80)';
+      mctx.fillRect(0, 0, miniSize, miniSize);
+      const mCell = (miniSize - 8) / Math.max(rows, cols);
+      const mOffX = (miniSize - cols * mCell) / 2;
+      const mOffY = (miniSize - rows * mCell) / 2;
+      mctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          if (!grid[r][c].valid) continue;
-          const x = c * cs, y = r * cs;
-          octx.fillStyle = (r + c) % 2 === 0 ? spec.floorColor : spec.floorAltColor;
-          octx.fillRect(x, y, cs + 0.8, cs + 0.8);
-          // Subtle recessed floor dot
-          octx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-          octx.fillRect(x + 4, y + 4, cs - 8, cs - 8);
-        }
-      }
-
-      const wallW = cs * 0.12;
-      const strokeWalls = (sx, sy) => {
-        octx.beginPath();
-        for (let r = 0; r < rows; r++) {
-          for (let c = 0; c < cols; c++) {
-            const cell = grid[r][c];
-            if (!cell.valid) continue;
-            const x = c * cs + sx, y = r * cs + sy;
-            if (cell.walls.top) { octx.moveTo(x, y); octx.lineTo(x + cs, y); }
-            if (cell.walls.right) { octx.moveTo(x + cs, y); octx.lineTo(x + cs, y + cs); }
-            if (cell.walls.bottom) { octx.moveTo(x, y + cs); octx.lineTo(x + cs, y + cs); }
-            if (cell.walls.left) { octx.moveTo(x, y); octx.lineTo(x, y + cs); }
+          if (grid[r][c].valid) {
+            mctx.fillRect(mOffX + c * mCell, mOffY + r * mCell, Math.max(1.2, mCell), Math.max(1.2, mCell));
           }
         }
-        octx.stroke();
-      };
-
-      // Pass A: Ambient Floor Drop Shadow
-      octx.save();
-      octx.lineCap = 'round';
-      octx.lineJoin = 'round';
-      octx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
-      octx.lineWidth = wallW * 1.55;
-      strokeWalls(3.2, 4.2);
-      octx.restore();
-
-      // Pass B: 3D Extruded Side Bevel
-      octx.save();
-      octx.lineCap = 'round';
-      octx.lineJoin = 'round';
-      octx.strokeStyle = spec.wallSideColor;
-      octx.lineWidth = wallW * 1.25;
-      strokeWalls(1.5, 2.0);
-      octx.restore();
-
-      // Pass C: Primary-to-Contrast Gradient Wall Body
-      octx.save();
-      octx.lineCap = 'round';
-      octx.lineJoin = 'round';
-      const grad = octx.createLinearGradient(0, 0, offCanvas.width, offCanvas.height);
-      grad.addColorStop(0, spec.wallGradStart);
-      grad.addColorStop(0.55, spec.wallGradMid);
-      grad.addColorStop(1, spec.wallGradEnd);
-      octx.strokeStyle = grad;
-      octx.lineWidth = wallW;
-      strokeWalls(0, 0);
-      octx.restore();
-
-      // Pass D: Crisp Specular Top Highlight
-      octx.save();
-      octx.lineCap = 'round';
-      octx.lineJoin = 'round';
-      octx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-      octx.lineWidth = wallW * 0.28;
-      strokeWalls(-0.6, -0.8);
-      octx.restore();
-
-      // Pre-render Minimap Silhouette
-      const mapSize = 60;
-      const miniCanvas = mazeCache.minimapCanvas;
-      miniCanvas.width = mapSize;
-      miniCanvas.height = mapSize;
-      const mctx = miniCanvas.getContext('2d');
-      mctx.clearRect(0, 0, mapSize, mapSize);
-      mctx.fillStyle = 'rgba(10, 15, 30, 0.84)';
-      mctx.strokeStyle = 'rgba(255, 255, 255, 0.32)';
-      mctx.lineWidth = 1.2;
-      mctx.beginPath();
-      mctx.roundRect(0, 0, mapSize, mapSize, 10);
-      mctx.fill();
-      mctx.stroke();
-
-      const scale = (mapSize - 8) / Math.max(spec.cols, spec.rows);
-      mctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
-      for (const [r, c] of gameState.validCells) {
-        mctx.fillRect(4 + c * scale, 4 + r * scale, Math.max(1, scale), Math.max(1, scale));
       }
-
-      mazeCache.dirty = false;
+      mctx.strokeStyle = spec.contrastHex;
+      mctx.lineWidth = 1.5;
+      mctx.strokeRect(0.75, 0.75, miniSize - 1.5, miniSize - 1.5);
+      gameState.minimapCache.dirty = false;
     }
 
     function updatePlayerBFS(force = false) {
-      if (!gameState.grid.length) return;
       const pr = Math.round(gameState.player.r);
       const pc = Math.round(gameState.player.c);
       if (!force && pr === gameState.lastBFSPlayerCell.r && pc === gameState.lastBFSPlayerCell.c) return;
@@ -1313,64 +1715,59 @@
       const { distMap, parentMap } = computeBFSReachability(gameState.grid, pr, pc);
       gameState.playerBFSMap = distMap;
 
-      if (isGuideAllowedForCurrentLevel() && gameState.showBFSOverlay) {
-        const paths = [];
-        gameState.babies.forEach(b => {
-          if (!b.rescued && distMap[b.r] && distMap[b.r][b.c] > 0) {
-            paths.push({ type: 'baby', points: reconstructPath(parentMap, b.r, b.c) });
-          }
-        });
-        if (distMap[gameState.exitCell.r] && distMap[gameState.exitCell.r][gameState.exitCell.c] > 0) {
-          paths.push({ type: 'exit', points: reconstructPath(parentMap, gameState.exitCell.r, gameState.exitCell.c) });
-        }
-        gameState.bfsPathsToTargets = paths;
-      } else {
+      if (!gameState.showBFSOverlay || !isGuideAllowedForCurrentLevel()) {
         gameState.bfsPathsToTargets = [];
+        rebuild3DGuideOrbs();
+        return;
       }
+
+      const targets = gameState.babies.filter(b => !b.rescued).map(b => [b.r, b.c]);
+      if (targets.length === 0) targets.push([gameState.exitCell.r, gameState.exitCell.c]);
+      targets.sort((a, b) => {
+        const da = distMap[a[0]] ? distMap[a[0]][a[1]] : 9999;
+        const db = distMap[b[0]] ? distMap[b[0]][b[1]] : 9999;
+        return da - db;
+      });
+      gameState.bfsPathsToTargets = [reconstructPath(parentMap, pr, pc, targets[0][0], targets[0][1])];
+      rebuild3DGuideOrbs();
     }
 
     // =========================================================================
-    // 7. LEVEL LOADING & SEQUENTIAL PROGRESSION
+    // 8. LEVEL LOADING & PROGRESSION
     // =========================================================================
-    function loadLevel(idx, autoStart = false, resetLivesToThree = true) {
+    function loadLevel(idx, autoStart = false, resetLives = true) {
+      stopLoops();
+      hideOverlay();
       gameState.currentLevelIdx = Math.max(0, Math.min(LEVELS.length - 1, idx));
-      if (resetLivesToThree) gameState.lives = 3;
       gameState.hasActiveSession = autoStart;
       gameState.deathAnim.active = false;
       gameState.celebration.active = false;
-      gameState.showBFSOverlay = false;
-      gameState.bfsPathsToTargets = [];
-      gameState.lastBFSPlayerCell = { r: -1, c: -1 };
       gameState.fxParticles = [];
       gameState.floatingTexts = [];
-      gameState.virtualStick.active = false;
-
-      sound.setTension(0);
-      document.getElementById('tension-vignette').style.opacity = '0';
-      gameState.lastVignetteOpacity = 0;
+      if (resetLives) gameState.lives = 3;
+      if (!isGuideAllowedForCurrentLevel()) gameState.showBFSOverlay = false;
 
       const spec = LEVELS[gameState.currentLevelIdx];
+      document.getElementById('app-body').style.background = spec.bgGradient;
+
       const { grid, validCells } = generateShapedMaze(spec);
       gameState.grid = grid;
       gameState.validCells = validCells;
 
-      // Pick interior multi-exit start cell
-      const sorted = [...validCells].sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]));
-      let startPos = sorted[Math.min(Math.floor(sorted.length * 0.08), sorted.length - 1)] || sorted[0];
-      for (let i = 0; i < Math.min(35, sorted.length); i++) {
-        const [cr, cc] = sorted[i];
-        if (countOpenPassages(grid[cr][cc]) >= 3) { startPos = [cr, cc]; break; }
-      }
+      // Pick central open spawn hub for Mother Mouse
+      const midR = spec.rows / 2, midC = spec.cols / 2;
+      const sortedByCenter = [...validCells].sort((a, b) => Math.hypot(a[0] - midR, a[1] - midC) - Math.hypot(b[0] - midR, b[1] - midC));
+      const startPos = sortedByCenter[0];
       guaranteeSafeMultiExitSpawn(grid, startPos[0], startPos[1]);
 
       const { distMap } = computeBFSReachability(grid, startPos[0], startPos[1]);
       gameState.playerBFSMap = distMap;
 
-      let exitPos = sorted[sorted.length - 1];
-      let maxBfsDist = -1;
-      for (const [r, c] of validCells) {
-        if (distMap[r][c] > maxBfsDist) { maxBfsDist = distMap[r][c]; exitPos = [r, c]; }
-      }
+      const reachableCells = validCells
+        .filter(([r, c]) => distMap[r][c] > 0)
+        .sort((a, b) => distMap[b[0]][b[1]] - distMap[a[0]][a[1]]);
+
+      const exitPos = reachableCells[0] || validCells[validCells.length - 1];
 
       gameState.player = {
         r: startPos[0], c: startPos[1],
@@ -1389,12 +1786,15 @@
 
       gameState.exitCell = { r: exitPos[0], c: exitPos[1], unlocked: false };
       gameState.rescuedTrail = [{ r: startPos[0], c: startPos[1], angle: 0 }];
+      gameState.shieldUntil = Date.now() + 3000;
+      gameState.lastBFSPlayerCell = { r: -1, c: -1 };
+      gameState.lastTensionUIState = false;
+      gameState.lastVignetteOpacity = -1;
+      document.getElementById('tension-vignette').style.opacity = '0';
 
-      // Place Baby Mice distributed across the maze
+      // Spawn Baby Mice well-distributed across maze
       const occupied = new Set([`${startPos[0]},${startPos[1]}`, `${exitPos[0]},${exitPos[1]}`]);
-      const babyPool = validCells.filter(([r, c]) => distMap[r][c] >= 5 && !occupied.has(`${r},${c}`));
-      shuffleArray(babyPool);
-
+      const babyPool = shuffleArray(reachableCells.filter(([r, c]) => distMap[r][c] >= 4 && !occupied.has(`${r},${c}`)));
       gameState.babies = [];
       for (let i = 0; i < spec.babies && i < babyPool.length; i++) {
         const [br, bc] = babyPool[i];
@@ -1402,88 +1802,71 @@
         gameState.babies.push({ id: i, r: br, c: bc, rescued: false, bobPhase: Math.random() * Math.PI * 2 });
       }
 
-      // Place Cats far from startPos and spread apart
-      const farCatPool = validCells
-        .filter(([r, c]) => distMap[r][c] >= 10 && Math.hypot(r - startPos[0], c - startPos[1]) >= 8 && !occupied.has(`${r},${c}`))
-        .sort((a, b) => distMap[b[0]][b[1]] - distMap[a[0]][a[1]]);
-      const fallbackPool = validCells
-        .filter(([r, c]) => !occupied.has(`${r},${c}`))
-        .sort((a, b) => distMap[b[0]][b[1]] - distMap[a[0]][a[1]]);
-      const pool = farCatPool.length >= spec.cats ? farCatPool : fallbackPool;
-
-      const catPalettes = [
-        { body: '#475569', stripe: '#1e293b', earInner: '#fda4af' },
-        { body: '#ea580c', stripe: '#9a3412', earInner: '#fed7aa' },
-        { body: '#334155', stripe: '#0f172a', earInner: '#f43f5e' },
-        { body: '#9333ea', stripe: '#581c87', earInner: '#f5d0fe' }
-      ];
-
+      // Spawn Patrol Cats safely far from player
+      const farCatPool = reachableCells.filter(([r, c]) => distMap[r][c] >= 8 && !occupied.has(`${r},${c}`));
+      const catPool = farCatPool.length >= spec.cats ? farCatPool : reachableCells.filter(([r, c]) => !occupied.has(`${r},${c}`));
       gameState.cats = [];
-      const chosenCats = [];
+      const stride = Math.max(1, Math.floor(catPool.length / Math.max(1, spec.cats)));
       for (let i = 0; i < spec.cats; i++) {
-        let pick = pool[i % Math.max(1, pool.length)] || exitPos;
-        for (const cand of pool) {
-          if (chosenCats.every(prev => Math.hypot(cand[0] - prev[0], cand[1] - prev[1]) >= 5)) {
-            pick = cand;
-            break;
-          }
-        }
-        chosenCats.push(pick);
+        const pick = catPool[Math.min(i * stride, catPool.length - 1)] || exitPos;
         gameState.cats.push({
-          id: i, r: pick[0], c: pick[1], targetR: pick[0], targetC: pick[1],
-          lastR: pick[0], lastC: pick[1], angle: 0, visualAngle: 0,
-          stridePhase: Math.random() * Math.PI * 2,
-          alerted: false,
-          palette: catPalettes[i % catPalettes.length]
+          id: i,
+          r: pick[0], c: pick[1],
+          targetR: pick[0], targetC: pick[1],
+          lastR: pick[0], lastC: pick[1],
+          angle: 0, visualAngle: 0, stridePhase: i * 1.4, alerted: false
         });
       }
 
-      rebuildStaticMazeCache();
+      rebuildMinimapCache();
+      build3DLevelScene();
+      updatePlayerBFS(true);
       updateFullLevelUI();
 
       if (autoStart) {
-        startGameplay(true);
+        startGameplay();
       } else {
-        stopLoops();
-        renderMazeFrame();
+        renderFrame();
       }
     }
 
     function updateHUDCountersOnly() {
       const spec = LEVELS[gameState.currentLevelIdx];
+      const rescuedCount = gameState.babies.filter(b => b.rescued).length;
       const continuesLeft = gameState.continuesLeft[gameState.currentLevelIdx];
-      const rescued = gameState.babies.filter(b => b.rescued).length;
 
-      document.getElementById('hud-lives').textContent = '❤️'.repeat(Math.max(0, gameState.lives)) || '💔';
-      document.getElementById('hud-babies').textContent = `🐭 ${rescued}/${spec.babies}`;
-      document.getElementById('hud-cats').textContent = `🔄${continuesLeft} · 🐱${spec.cats}`;
-      document.getElementById('hud-score').textContent = `${gameState.score}`;
-      document.getElementById('mission-text').textContent =
-        rescued < spec.babies ? `🐭 ${rescued} / ${spec.babies}` : `🚪 前往出口`;
+      document.getElementById('hud-lives').textContent = gameState.lives > 0 ? '❤️'.repeat(gameState.lives) : '💔';
+      document.getElementById('hud-babies').textContent = `${rescuedCount} / ${spec.babies}`;
+      document.getElementById('hud-cats').textContent = `🔄${continuesLeft}·🐱${spec.cats}`;
+      document.getElementById('hud-score').textContent = String(gameState.score);
+
+      if (gameState.score > gameState.bestScore) {
+        gameState.bestScore = gameState.score;
+        saveBestScore(gameState.bestScore);
+      }
     }
 
     function updateFullLevelUI() {
       const spec = LEVELS[gameState.currentLevelIdx];
-      document.getElementById('app-body').style.background = spec.bgGradient;
-      const badge = document.getElementById('theme-badge');
-      badge.style.background = spec.contrastHex;
-      badge.style.color = '#0f172a';
-      document.getElementById('level-subtitle').textContent = `第 ${spec.level} / ${LEVELS.length} 關 · ${spec.shapeName}`;
-      document.getElementById('island-status').textContent = `L${spec.level}`;
-      const banner = document.getElementById('mission-banner');
-      banner.style.background = 'rgba(15, 23, 42, 0.72)';
-      banner.style.borderLeft = `4px solid ${spec.contrastHex}`;
-      document.getElementById('shape-pill').textContent = `${spec.shapeName} ${spec.cols}×${spec.rows}`;
+      const rescuedCount = gameState.babies.filter(b => b.rescued).length;
 
-      const bfsBtn = document.getElementById('btn-ToggleBFS');
-      const bfsText = document.getElementById('bfs-toggle-text');
-      if (isGuideAllowedForCurrentLevel()) {
-        bfsBtn.disabled = false;
-        bfsBtn.className = 'ios-glass hover:bg-white/20 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 shadow w-full justify-center';
-        bfsText.textContent = gameState.showBFSOverlay ? '引導: 開' : '引導: 關';
+      document.getElementById('theme-badge').textContent = spec.colorLabel;
+      document.getElementById('level-subtitle').textContent = `第 ${spec.level} / ${LEVELS.length} 關 · ${spec.shapeName}`;
+      document.getElementById('shape-pill').textContent = spec.shapeName;
+
+      const missionEl = document.getElementById('mission-text');
+      if (rescuedCount < spec.babies) {
+        missionEl.textContent = `尋找剩餘 ${spec.babies - rescuedCount} 隻小老鼠`;
       } else {
-        bfsBtn.disabled = true;
-        bfsBtn.className = 'hidden';
+        missionEl.textContent = '全員集合！前往綠色光柱安全出口';
+      }
+
+      const guideBtn = document.getElementById('btn-ToggleBFS');
+      if (isGuideAllowedForCurrentLevel()) {
+        guideBtn.classList.remove('hidden');
+        document.getElementById('bfs-toggle-text').textContent = gameState.showBFSOverlay ? '引導: 開' : '引導: 關';
+      } else {
+        guideBtn.classList.add('hidden');
       }
 
       updateHUDCountersOnly();
@@ -1492,20 +1875,17 @@
 
     function handleSeamlessLevelClear() {
       const spec = LEVELS[gameState.currentLevelIdx];
+      gameState.score += 500;
+      saveBestScore(gameState.score);
       gameState.continuesLeft[gameState.currentLevelIdx] = 10;
-      if (gameState.score > gameState.bestScore) {
-        gameState.bestScore = gameState.score;
-        saveBestScore(gameState.bestScore);
-      }
 
       if (spec.level === LEVELS.length) {
         triggerAllClearFirecrackerCelebration();
-        return;
+      } else {
+        sound.playLevelClearFanfare();
+        showToast(`🎉 第 ${spec.level} 關過關！`, 'bg-emerald-400 text-slate-950');
+        loadLevel(gameState.currentLevelIdx + 1, true, true);
       }
-
-      const nextIdx = gameState.currentLevelIdx + 1;
-      showToast(`🎉 過關！進入第 ${nextIdx + 1} 關`, 'bg-emerald-300 text-slate-950');
-      loadLevel(nextIdx, true, true);
     }
 
     function handleOutOfThreeLivesSeamless() {
@@ -1513,383 +1893,328 @@
       if (gameState.continuesLeft[idx] > 0) {
         gameState.continuesLeft[idx]--;
         const leftAfter = gameState.continuesLeft[idx];
-        loadLevel(idx, true, true);
         showToast(`🔄 續關 (剩 ${leftAfter}/10 次)`, 'bg-amber-300 text-slate-950');
+        loadLevel(idx, true, true);
       } else {
         gameState.continuesLeft.fill(10);
         gameState.score = 0;
+        showToast('續關用盡，回到第 1 關', 'bg-rose-500 text-white');
         loadLevel(0, true, true);
-        showToast(`💀 10次續關用盡，重回第 1 關`, 'bg-rose-500 text-white');
       }
     }
 
     // =========================================================================
-    // 8. DELUXE ALL-CLEAR FIRECRACKER & FIREWORKS CELEBRATION
+    // 9. DELUXE 4-STRING HANGING FIRECRACKER & FIREWORKS CELEBRATION (LEVEL 20)
     // =========================================================================
-    function spawnFirecrackerBurst(x, y, count = 34, isBig = false) {
-      const c = gameState.celebration;
-      const palettes = [
-        ['#ef4444', '#facc15', '#fde047', '#ffffff'],
-        ['#fb7185', '#f59e0b', '#fef08a', '#ffffff'],
-        ['#22d3ee', '#38bdf8', '#fde047', '#ffffff'],
-        ['#34d399', '#aeea00', '#fef08a', '#ffffff']
-      ];
-      const pal = palettes[Math.floor(Math.random() * palettes.length)];
-
-      c.shockwaves.push({
-        x, y, r: isBig ? 8 : 4, maxR: isBig ? 95 : 46,
-        alpha: isBig ? 0.9 : 0.65, color: isBig ? '#fde047' : '#fb923c'
-      });
-
-      if (isBig) {
-        c.shake = Math.min(9, c.shake + 5.5);
-        c.flashAlpha = Math.min(0.45, c.flashAlpha + 0.28);
-      } else {
-        c.shake = Math.min(5, c.shake + 1.8);
-      }
-
+    function spawnFirecrackerBurst(x, y, count = 42, isGold = false) {
+      const cel = gameState.celebration;
+      const colors = isGold
+        ? ['#fde047', '#facc15', '#ffffff', '#fb923c', '#ef4444']
+        : ['#ef4444', '#fde047', '#fb923c', '#ffffff', '#38bdf8', '#f472b6'];
       for (let i = 0; i < count; i++) {
-        const ang = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.2;
-        const speed = (isBig ? 130 : 75) + Math.random() * (isBig ? 190 : 110);
-        c.particles.push({
-          x, y, prevX: x, prevY: y,
-          vx: Math.cos(ang) * speed,
-          vy: Math.sin(ang) * speed - (isBig ? 25 : 10),
-          life: (isBig ? 0.75 : 0.42) + Math.random() * 0.45,
-          maxLife: isBig ? 1.15 : 0.8,
-          size: (isBig ? 3.2 : 2.0) + Math.random() * 2.2,
-          color: pal[Math.floor(Math.random() * pal.length)]
+        const ang = Math.random() * Math.PI * 2;
+        const spd = 70 + Math.random() * 210;
+        cel.particles.push({
+          x, y,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd - 35,
+          size: 2.2 + Math.random() * 3.4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          life: 0.75 + Math.random() * 0.65,
+          maxLife: 1.4
         });
       }
-
-      const scrapCount = isBig ? 18 : 8;
-      for (let i = 0; i < scrapCount; i++) {
-        c.confetti.push({
-          x: x + (Math.random() - 0.5) * 26,
-          y: y + (Math.random() - 0.5) * 16,
-          vx: (Math.random() - 0.5) * 110,
-          vy: -55 - Math.random() * 85,
-          rot: Math.random() * Math.PI * 2,
-          vRot: (Math.random() - 0.5) * 11,
-          flip: Math.random() * Math.PI * 2,
-          vFlip: 7 + Math.random() * 8,
-          w: 7 + Math.random() * 5,
-          h: 3.5 + Math.random() * 3,
-          color: Math.random() < 0.6 ? '#ef4444' : '#facc15',
-          life: 2.6 + Math.random() * 1.4
-        });
-      }
+      cel.shockwaves.push({ x, y, radius: 6, maxRadius: 72 + Math.random() * 45, alpha: 0.9, color: isGold ? '#fde047' : '#fb7185' });
+      cel.shake = Math.max(cel.shake, isGold ? 6.5 : 4.0);
+      cel.flashAlpha = Math.max(cel.flashAlpha, isGold ? 0.28 : 0.14);
     }
 
-    function launchFireworkRocket(startX, targetY) {
-      const { height } = gameState.canvasSize;
+    function launchFireworkRocket() {
+      const w = gameState.canvasSize.width || 340;
+      const h = gameState.canvasSize.height || 340;
       gameState.celebration.rockets.push({
-        x: startX, y: height + 10, prevX: startX, prevY: height + 10,
-        vx: (Math.random() - 0.5) * 40, vy: -380 - Math.random() * 110, targetY
+        x: w * (0.16 + Math.random() * 0.68),
+        y: h + 10,
+        vx: (Math.random() - 0.5) * 45,
+        vy: -(240 + Math.random() * 140),
+        targetY: h * (0.16 + Math.random() * 0.34),
+        color: ['#fde047', '#ef4444', '#38bdf8', '#f472b6', '#34d399'][Math.floor(Math.random() * 5)]
       });
     }
 
     function triggerAllClearFirecrackerCelebration() {
       stopLoops();
-      gameState.status = 'all_clear_celebration';
       gameState.hasActiveSession = false;
-      gameState.player.moveDir = { dr: 0, dc: 0 };
-      gameState.player.heldDir = null;
-      gameState.player.bufferedDir = null;
-      gameState.virtualStick.active = false;
-      highlightActiveDpadButton(null, 0, 0);
+      gameState.status = 'all_clear_celebration';
+      sound.stopChaseBGM();
+      sound.playDeluxeFirecrackerSalute();
 
-      const { width, height } = gameState.canvasSize;
-      const now = performance.now();
-      gameState.celebration = {
-        active: true, startTime: now, lastVolleyTime: now,
-        shake: 6, flashAlpha: 0.35,
-        particles: [], confetti: [], rockets: [], shockwaves: [],
-        strings: [
-          { x: width * 0.11, topY: 16, count: 12, popped: 0, nextPopAt: now + 60, swayPhase: 0.2 },
-          { x: width * 0.23, topY: 16, count: 10, popped: 0, nextPopAt: now + 110, swayPhase: 1.4 },
-          { x: width * 0.77, topY: 16, count: 10, popped: 0, nextPopAt: now + 90, swayPhase: 2.5 },
-          { x: width * 0.89, topY: 16, count: 12, popped: 0, nextPopAt: now + 70, swayPhase: 3.7 }
-        ]
-      };
+      const w = gameState.canvasSize.width || 340;
+      const h = gameState.canvasSize.height || 340;
+      const cel = gameState.celebration;
+      cel.active = true;
+      cel.startTime = performance.now();
+      cel.lastVolleyTime = performance.now();
+      cel.particles = [];
+      cel.confetti = [];
+      cel.rockets = [];
+      cel.shockwaves = [];
+      cel.shake = 6;
+      cel.flashAlpha = 0.32;
 
-      sound.playFirecrackerVolley();
-      spawnFirecrackerBurst(width * 0.5, height * 0.30, 56, true);
-      launchFireworkRocket(width * 0.32, height * 0.22);
-      launchFireworkRocket(width * 0.68, height * 0.20);
+      // 4 Hanging Red-Gold Lantern Firecracker Strings
+      cel.strings = [0.14, 0.34, 0.66, 0.86].map((xr, idx) => ({
+        x: w * xr,
+        topY: 16,
+        crackers: Array.from({ length: 14 }, (_, k) => ({
+          dy: 32 + k * 14,
+          side: k % 2 === 0 ? -1 : 1,
+          exploded: false,
+          fuseAt: (13 - k) * 0.14 + idx * 0.08
+        }))
+      }));
 
-      showOverlayBox();
-      const overlay = document.getElementById('canvas-overlay');
-      overlay.className = 'absolute inset-0 bg-slate-950/35 flex flex-col items-center justify-end pb-4 px-4 text-center z-20 pointer-events-auto';
-      document.getElementById('overlay-emoji').textContent = '🧨🏮🏆🏮🧨';
-      document.getElementById('overlay-title').textContent = `恭喜全 ${LEVELS.length} 關破關！`;
-      document.getElementById('overlay-desc').textContent = `總積分：${gameState.score} 分`;
-
-      const primaryBtn = document.getElementById('btn-OverlayPrimary');
-      primaryBtn.textContent = '🔄 再玩一次';
-      primaryBtn.onclick = () => {
-        hideOverlay();
-        gameState.celebration.active = false;
-        gameState.continuesLeft.fill(10);
-        gameState.score = 0;
-        loadLevel(0, true, true);
-      };
-
-      const secondaryBtn = document.getElementById('btn-OverlaySecondary');
-      secondaryBtn.textContent = '🏠 首頁';
-      secondaryBtn.classList.remove('hidden');
-      secondaryBtn.onclick = () => {
-        hideOverlay();
-        gameState.celebration.active = false;
-        gameState.currentLevelIdx = 0;
-        openHomeMenuScreen();
-      };
-
-      gameState.lastFrameTime = now;
-      const celebLoop = (t) => {
-        const dt = Math.min(0.035, Math.max(0.001, (t - gameState.lastFrameTime) / 1000));
-        gameState.lastFrameTime = t;
-        if (gameState.status === 'all_clear_celebration') {
-          updateFirecrackerCelebration(dt, t);
-          renderMazeFrame();
-          gameState.animFrame = requestAnimationFrame(celebLoop);
-        }
-      };
-      gameState.animFrame = requestAnimationFrame(celebLoop);
-    }
-
-    function updateFirecrackerCelebration(dt, now) {
-      const c = gameState.celebration;
-      const { width, height } = gameState.canvasSize;
-      c.shake = Math.max(0, c.shake - 18 * dt);
-      c.flashAlpha = Math.max(0, c.flashAlpha - 1.4 * dt);
-
-      c.strings.forEach(str => {
-        if (str.popped < str.count && now >= str.nextPopAt) {
-          const idxFromBottom = str.count - 1 - str.popped;
-          const sway = Math.sin(now * 0.005 + str.swayPhase) * 4;
-          const fy = str.topY + 26 + idxFromBottom * 13;
-          const fx = str.x + sway + (idxFromBottom % 2 === 0 ? -8 : 8);
-          spawnFirecrackerBurst(fx, fy, 22, false);
-          sound.playFirecrackerPop(0, 0.22);
-          str.popped++;
-          str.nextPopAt = now + 85;
-        }
-      });
-
-      if (now - c.lastVolleyTime > 2200) {
-        c.lastVolleyTime = now;
-        launchFireworkRocket(width * (0.25 + Math.random() * 0.2), height * (0.16 + Math.random() * 0.16));
-        launchFireworkRocket(width * (0.55 + Math.random() * 0.2), height * (0.16 + Math.random() * 0.16));
-        c.strings.forEach(str => { str.popped = 0; str.nextPopAt = now + 90; });
+      for (let i = 0; i < 65; i++) {
+        cel.confetti.push({
+          x: Math.random() * w,
+          y: -Math.random() * h * 0.8,
+          vx: (Math.random() - 0.5) * 50,
+          vy: 55 + Math.random() * 90,
+          rot: Math.random() * Math.PI * 2,
+          vrot: (Math.random() - 0.5) * 8,
+          w: 6 + Math.random() * 5,
+          h: 3 + Math.random() * 3,
+          color: ['#ef4444', '#facc15', '#fde047', '#ffffff', '#fb923c'][i % 5]
+        });
       }
 
-      for (let i = c.rockets.length - 1; i >= 0; i--) {
-        const rk = c.rockets[i];
-        rk.prevX = rk.x; rk.prevY = rk.y;
-        rk.x += rk.vx * dt; rk.y += rk.vy * dt; rk.vy += 120 * dt;
-        if (rk.y <= rk.targetY || rk.vy >= -40) {
-          spawnFirecrackerBurst(rk.x, rk.y, 48, true);
+      launchFireworkRocket();
+      launchFireworkRocket();
+
+      showOverlayBox(
+        '🧨',
+        `恭喜全 ${LEVELS.length} 關破關！`,
+        `總分 ${gameState.score} · 點擊畫面可隨時加放煙火！`,
+        '從第 1 關再挑戰',
+        () => {
+          gameState.continuesLeft.fill(10);
+          gameState.score = 0;
+          loadLevel(0, true, true);
+        },
+        '返回選項首頁',
+        openHomeMenuScreen
+      );
+
+      gameState.lastFrameTime = performance.now();
+      const loopCel = (now) => {
+        if (gameState.status !== 'all_clear_celebration') return;
+        const dt = Math.min(0.05, Math.max(0.004, (now - gameState.lastFrameTime) / 1000));
+        gameState.lastFrameTime = now;
+        updateFirecrackerCelebration(dt);
+        renderFrame();
+        gameState.rafId = requestAnimationFrame(loopCel);
+      };
+      gameState.rafId = requestAnimationFrame(loopCel);
+    }
+
+    function updateFirecrackerCelebration(dt) {
+      const cel = gameState.celebration;
+      const elapsed = (performance.now() - cel.startTime) / 1000;
+      const w = gameState.canvasSize.width || 340;
+      const h = gameState.canvasSize.height || 340;
+
+      cel.shake = Math.max(0, cel.shake - dt * 14);
+      cel.flashAlpha = Math.max(0, cel.flashAlpha - dt * 1.4);
+
+      cel.strings.forEach(str => {
+        str.crackers.forEach(cr => {
+          if (!cr.exploded && elapsed >= cr.fuseAt) {
+            cr.exploded = true;
+            spawnFirecrackerBurst(str.x + cr.side * 9, str.topY + cr.dy, 16, false);
+          }
+        });
+      });
+
+      if (performance.now() - cel.lastVolleyTime > 950) {
+        cel.lastVolleyTime = performance.now();
+        launchFireworkRocket();
+      }
+
+      for (let i = cel.rockets.length - 1; i >= 0; i--) {
+        const r = cel.rockets[i];
+        r.x += r.vx * dt;
+        r.y += r.vy * dt;
+        if (r.y <= r.targetY) {
+          spawnFirecrackerBurst(r.x, r.y, 48, true);
           sound.playBigFireworkBoom(0);
-          c.rockets.splice(i, 1);
+          cel.rockets.splice(i, 1);
         }
       }
 
-      for (let i = c.shockwaves.length - 1; i >= 0; i--) {
-        const sw = c.shockwaves[i];
-        sw.r += (sw.maxR - sw.r) * 9 * dt + 30 * dt;
-        sw.alpha -= 1.8 * dt;
-        if (sw.alpha <= 0) c.shockwaves.splice(i, 1);
+      for (let i = cel.particles.length - 1; i >= 0; i--) {
+        const p = cel.particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 190 * dt;
+        p.life -= dt;
+        if (p.life <= 0) cel.particles.splice(i, 1);
       }
 
-      for (let i = c.particles.length - 1; i >= 0; i--) {
-        const pt = c.particles[i];
-        pt.prevX = pt.x; pt.prevY = pt.y;
-        pt.x += pt.vx * dt; pt.y += pt.vy * dt;
-        pt.vx *= Math.pow(0.28, dt); pt.vy += 220 * dt;
-        pt.life -= dt;
-        if (pt.life <= 0) c.particles.splice(i, 1);
+      for (let i = cel.shockwaves.length - 1; i >= 0; i--) {
+        const s = cel.shockwaves[i];
+        s.radius += 190 * dt;
+        s.alpha -= 1.8 * dt;
+        if (s.alpha <= 0 || s.radius >= s.maxRadius) cel.shockwaves.splice(i, 1);
       }
 
-      for (let i = c.confetti.length - 1; i >= 0; i--) {
-        const cf = c.confetti[i];
-        cf.x += cf.vx * dt + Math.sin(now * 0.007 + i) * 24 * dt;
-        cf.y += cf.vy * dt; cf.vy += 110 * dt;
-        cf.rot += cf.vRot * dt; cf.flip += cf.vFlip * dt;
-        cf.life -= dt;
-        if (cf.life <= 0 || cf.y > height + 20) c.confetti.splice(i, 1);
-      }
+      cel.confetti.forEach(c => {
+        c.x += c.vx * dt;
+        c.y += c.vy * dt;
+        c.rot += c.vrot * dt;
+        if (c.y > h + 15) { c.y = -12; c.x = Math.random() * w; }
+      });
     }
 
-    function drawFirecrackerCelebration(ctx) {
-      const c = gameState.celebration;
-      if (!c.active) return;
-      const { width, height } = gameState.canvasSize;
-      const now = performance.now();
-
+    function drawFirecrackerCelebration(ctx, w, h) {
+      const cel = gameState.celebration;
       ctx.save();
-      if (c.shake > 0.2) {
-        ctx.translate((Math.random() - 0.5) * c.shake * 2, (Math.random() - 0.5) * c.shake * 2);
-      }
-      if (c.flashAlpha > 0.01) {
-        ctx.fillStyle = `rgba(253, 224, 71, ${c.flashAlpha})`;
-        ctx.fillRect(0, 0, width, height);
+      if (cel.shake > 0.2) {
+        ctx.translate((Math.random() - 0.5) * cel.shake, (Math.random() - 0.5) * cel.shake);
       }
 
-      c.shockwaves.forEach(sw => {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, sw.alpha);
-        ctx.strokeStyle = sw.color;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-      });
+      if (cel.flashAlpha > 0.01) {
+        ctx.fillStyle = `rgba(254, 240, 138, ${cel.flashAlpha})`;
+        ctx.fillRect(0, 0, w, h);
+      }
 
-      c.rockets.forEach(rk => {
-        ctx.save();
-        ctx.strokeStyle = '#fde047';
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(rk.prevX, rk.prevY + 14);
-        ctx.lineTo(rk.x, rk.y);
-        ctx.stroke();
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(rk.x, rk.y, 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      });
-
-      c.strings.forEach(str => {
-        const sway = Math.sin(now * 0.005 + str.swayPhase) * 4;
-        const remaining = str.count - str.popped;
-        ctx.save();
-        ctx.fillStyle = '#b91c1c';
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.ellipse(str.x + sway * 0.3, str.topY, 13, 9, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
+      // 4 Hanging Red-Gold Lantern Firecracker Strings
+      cel.strings.forEach(str => {
         ctx.strokeStyle = '#fde047';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(str.x + sway * 0.3, str.topY + 9);
-        ctx.lineTo(str.x + sway, str.topY + 26 + Math.max(0, remaining - 1) * 13);
+        ctx.moveTo(str.x, 0);
+        ctx.lineTo(str.x, str.topY + 26);
         ctx.stroke();
 
-        for (let i = 0; i < remaining; i++) {
-          const fx = str.x + sway + (i % 2 === 0 ? -8 : 8);
-          const fy = str.topY + 26 + i * 13;
-          ctx.save();
-          ctx.translate(fx, fy);
-          ctx.rotate(i % 2 === 0 ? -0.48 : 0.48);
-          ctx.fillStyle = '#dc2626';
-          ctx.strokeStyle = '#fde047';
-          ctx.lineWidth = 1.2;
-          ctx.fillRect(-5, -9, 10, 18);
-          ctx.strokeRect(-5, -9, 10, 18);
-          ctx.fillStyle = '#facc15';
-          ctx.fillRect(-5, -2.5, 10, 4);
-          ctx.restore();
-        }
-        ctx.restore();
-      });
-
-      c.confetti.forEach(cf => {
-        ctx.save();
-        ctx.translate(cf.x, cf.y);
-        ctx.rotate(cf.rot);
-        ctx.scale(Math.cos(cf.flip), 1);
-        ctx.fillStyle = cf.color;
-        ctx.fillRect(-cf.w / 2, -cf.h / 2, cf.w, cf.h);
-        ctx.restore();
-      });
-
-      c.particles.forEach(pt => {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, Math.min(1, pt.life / pt.maxLife));
-        ctx.strokeStyle = pt.color;
-        ctx.lineWidth = pt.size;
-        ctx.lineCap = 'round';
+        // Top Red-Gold Lantern
+        ctx.fillStyle = '#dc2626';
         ctx.beginPath();
-        ctx.moveTo(pt.prevX, pt.prevY);
-        ctx.lineTo(pt.x, pt.y);
+        ctx.ellipse(str.x, str.topY + 12, 13, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 1.6;
         ctx.stroke();
+
+        str.crackers.forEach(cr => {
+          if (cr.exploded) return;
+          ctx.save();
+          ctx.translate(str.x + cr.side * 9, str.topY + cr.dy);
+          ctx.rotate(cr.side * 0.45);
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(-3.5, -7, 7, 14);
+          ctx.fillStyle = '#facc15';
+          ctx.fillRect(-3.5, -7, 7, 2.6);
+          ctx.fillRect(-3.5, 4.4, 7, 2.6);
+          ctx.restore();
+        });
+      });
+
+      cel.rockets.forEach(r => {
+        ctx.fillStyle = r.color;
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      cel.shockwaves.forEach(s => {
+        ctx.strokeStyle = s.color;
+        ctx.globalAlpha = Math.max(0, s.alpha);
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+
+      cel.particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+
+      cel.confetti.forEach(c => {
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        ctx.rotate(c.rot);
+        ctx.fillStyle = c.color;
+        ctx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h);
         ctx.restore();
       });
+
       ctx.restore();
     }
 
     // =========================================================================
-    // 9. STRICT GRID-RAIL PHYSICS + 250ms TURN BUFFER + SMART BFS CAT AI
+    // 10. MAIN GAME LOOP, STRICT GRID-RAIL 4-WAY PHYSICS & MODERATE 3D DIFFICULTY
     // =========================================================================
-    function startGameplay(grantSpawnShield = true) {
+    function startGameplay() {
+      stopLoops();
       hideOverlay();
-      const homeScreen = document.getElementById('home-menu-screen');
-      homeScreen.classList.add('hidden');
-      homeScreen.classList.remove('flex');
-
       gameState.status = 'playing';
       gameState.hasActiveSession = true;
-      if (grantSpawnShield) {
+      if (Date.now() > gameState.shieldUntil) {
         gameState.shieldUntil = Date.now() + 3000;
       }
+      document.getElementById('pause-icon').textContent = '⏸';
+      document.getElementById('island-status').textContent = '3D 迷宮進行中';
+      document.getElementById('danger-led').className = 'w-2 h-2 rounded-full bg-emerald-400';
+
+      sound.init();
+      sound.startChaseBGM();
+
       gameState.lastFrameTime = performance.now();
-      document.getElementById('pause-icon').textContent = '⏸️';
-
-      stopLoops();
-      if (sound.ctx) sound.startChaseBGM();
-
-      const frameLoop = (now) => {
-        const dt = Math.min(0.035, Math.max(0.001, (now - gameState.lastFrameTime) / 1000));
-        gameState.lastFrameTime = now;
-
+      const loop = (now) => {
         if (gameState.status === 'playing') {
+          const dt = Math.min(0.05, Math.max(0.004, (now - gameState.lastFrameTime) / 1000));
+          gameState.lastFrameTime = now;
           updateSmoothEntities(dt);
+          checkSmoothPlayerInteractions();
+          renderFrame();
+          if (gameState.status === 'playing') {
+            gameState.rafId = requestAnimationFrame(loop);
+          }
         } else if (gameState.status === 'dying_heaven') {
-          updateDeathHeavenAnimation(now);
-        }
-
-        renderMazeFrame();
-
-        if (gameState.status === 'playing' || gameState.status === 'dying_heaven') {
-          gameState.animFrame = requestAnimationFrame(frameLoop);
+          updateDeathHeavenAnimation();
+          renderFrame();
+          if (gameState.status === 'dying_heaven') {
+            gameState.rafId = requestAnimationFrame(loop);
+          }
         }
       };
-      gameState.animFrame = requestAnimationFrame(frameLoop);
+      gameState.rafId = requestAnimationFrame(loop);
     }
 
     function stopLoops() {
-      if (gameState.animFrame) {
-        cancelAnimationFrame(gameState.animFrame);
-        gameState.animFrame = null;
+      if (gameState.rafId) {
+        cancelAnimationFrame(gameState.rafId);
+        gameState.rafId = null;
       }
-      sound.stopChaseBGM();
     }
 
     function togglePause() {
       if (gameState.status === 'playing') {
-        gameState.status = 'paused';
         stopLoops();
+        gameState.status = 'paused';
+        gameState.virtualStick.active = false;
+        highlightActiveDpadButton(null, 0, 0);
+        sound.stopChaseBGM();
         document.getElementById('pause-icon').textContent = '▶️';
-        showOverlayBox();
-        document.getElementById('overlay-emoji').textContent = '⏸️';
-        document.getElementById('overlay-title').textContent = '已暫停';
-        document.getElementById('overlay-desc').textContent = '';
-        const primaryBtn = document.getElementById('btn-OverlayPrimary');
-        primaryBtn.textContent = '▶️ 繼續';
-        primaryBtn.onclick = () => startGameplay(false);
-        const secondaryBtn = document.getElementById('btn-OverlaySecondary');
-        secondaryBtn.textContent = '🏠 首頁';
-        secondaryBtn.classList.remove('hidden');
-        secondaryBtn.onclick = () => openHomeMenuScreen();
+        showOverlayBox('⏸️', '遊戲暫停', '隨時可以繼續或返回首頁。', '繼續遊戲', togglePause, '返回選項首頁', openHomeMenuScreen);
       } else if (gameState.status === 'paused') {
-        startGameplay(false);
+        startGameplay();
       }
     }
 
@@ -1908,11 +2233,10 @@
     function updateSmoothEntities(dt) {
       const p = gameState.player;
       const nowMs = Date.now();
-      const playerSpeed = 5.3;
+      const playerSpeed = 5.4; // Crisp, responsive speed for fair no-dash 3D play
       let remaining = playerSpeed * dt;
       let movedAny = false;
 
-      // Expire stale turn buffer after 280ms
       if (p.bufferedDir && nowMs - p.bufferedAt > 280) {
         p.bufferedDir = null;
       }
@@ -1920,7 +2244,7 @@
       while (remaining > 0.0001) {
         const isMoving = p.moveDir.dr !== 0 || p.moveDir.dc !== 0;
 
-        // Instant 180-degree mid-corridor reversal if heldDir opposes current moveDir
+        // Instant 180-degree mid-corridor reversal
         if (isMoving && p.heldDir && p.heldDir.dr === -p.moveDir.dr && p.heldDir.dc === -p.moveDir.dc) {
           const oldTR = p.targetR, oldTC = p.targetC;
           p.targetR = p.fromR; p.targetC = p.fromC;
@@ -1960,7 +2284,6 @@
           remaining -= distToTarget;
           movedAny = true;
 
-          // At exact cell center: check buffered turn first (within 280ms), then heldDir
           const validBuf = p.bufferedDir && canMoveFromCell(p.r, p.c, p.bufferedDir.dr, p.bufferedDir.dc);
           if (validBuf) {
             p.fromR = p.r; p.fromC = p.c;
@@ -1982,65 +2305,67 @@
         }
       }
 
-      // Smooth visual rotation for Mother Mouse
       p.visualAngle = lerpAngle(p.visualAngle, p.angle, 1 - Math.exp(-22 * dt));
 
       if (movedAny) {
         gameState.stepCounter++;
         sound.playStepPluck(gameState.stepCounter);
 
-        // Occasional subtle running dust puff
         if (Math.random() < 0.16) {
           gameState.fxParticles.push({
             r: p.r - Math.sin(p.angle) * 0.25,
             c: p.c - Math.cos(p.angle) * 0.25,
+            y: 0.10,
             vr: (Math.random() - 0.5) * 0.4,
             vc: (Math.random() - 0.5) * 0.4,
-            size: 2.2,
-            life: 0.28,
-            maxLife: 0.28,
-            color: 'rgba(255,255,255,0.52)'
+            vy: 0.5,
+            life: 0.26,
+            maxLife: 0.26,
+            color: '#ffffff'
           });
         }
 
         const head = gameState.rescuedTrail[0];
         if (!head || Math.hypot(p.r - head.r, p.c - head.c) >= 0.30) {
           gameState.rescuedTrail.unshift({ r: p.r, c: p.c, angle: p.visualAngle });
-          if (gameState.rescuedTrail.length > 70) gameState.rescuedTrail.pop();
+          if (gameState.rescuedTrail.length > 72) gameState.rescuedTrail.pop();
         }
         updatePlayerBFS(false);
       }
 
-      // Update world juice particles & floating score popups
+      // Update world particles & floating score popups
       for (let i = gameState.fxParticles.length - 1; i >= 0; i--) {
         const pt = gameState.fxParticles[i];
         pt.r += pt.vr * dt;
         pt.c += pt.vc * dt;
+        pt.y += pt.vy * dt;
+        pt.vy -= 4.5 * dt;
         pt.life -= dt;
         if (pt.life <= 0) gameState.fxParticles.splice(i, 1);
       }
       for (let i = gameState.floatingTexts.length - 1; i >= 0; i--) {
         const ft = gameState.floatingTexts[i];
-        ft.r -= 1.2 * dt;
+        ft.r -= 1.0 * dt;
         ft.life -= dt;
         if (ft.life <= 0) gameState.floatingTexts.splice(i, 1);
       }
 
-      // Smooth Camera Follow
-      const camLerp = 1 - Math.exp(-16 * dt);
+      // Smooth 3D Camera Follow
+      const camLerp = 1 - Math.exp(-12 * dt);
       gameState.camera.r += (p.r - gameState.camera.r) * camLerp;
       gameState.camera.c += (p.c - gameState.camera.c) * camLerp;
 
-      // Advance Patrol Cats
+      // Advance Patrol Cats (Moderate, fair no-dash 3D difficulty scaling across 20 levels)
+      const lvlScale = gameState.currentLevelIdx;
+      const patrolSpd = 1.95 + Math.min(0.60, lvlScale * 0.032); // L1: 1.95 -> L20: 2.55
+      const chaseSpd = 2.45 + Math.min(0.70, lvlScale * 0.037);  // L1: 2.45 -> L20: 3.15
       let minCatDist = Infinity;
+
       gameState.cats.forEach((cat, idx) => {
         const distToPlayer = Math.hypot(cat.r - p.r, cat.c - p.c);
         if (distToPlayer < minCatDist) minCatDist = distToPlayer;
-        cat.alerted = distToPlayer < 4.2 && !isPlayerProtected();
+        cat.alerted = distToPlayer < 4.4 && !isPlayerProtected();
 
-        const lvlScale = gameState.currentLevelIdx;
-        const patrolSpd = 2.12 + Math.min(0.60, lvlScale * 0.032);
-        const chaseSpd = 2.68 + Math.min(0.75, lvlScale * 0.04);
         const catSpeed = cat.alerted ? chaseSpd : patrolSpd;
         let remCat = catSpeed * dt;
         while (remCat > 0) {
@@ -2065,7 +2390,7 @@
         cat.visualAngle = lerpAngle(cat.visualAngle, cat.angle, 1 - Math.exp(-16 * dt));
       });
 
-      // Proximity Tension Music & Vignette
+      // Proximity Tension Music & Red Vignette
       const tension = minCatDist < 6.0 ? Math.min(1, (6.0 - minCatDist) / 4.2) : 0;
       sound.setTension(tension);
 
@@ -2079,71 +2404,57 @@
       if (isDangerNow !== gameState.lastTensionUIState) {
         gameState.lastTensionUIState = isDangerNow;
         const islandStatus = document.getElementById('island-status');
-        const dangerLed = document.getElementById('danger-led');
+        const led = document.getElementById('danger-led');
         if (isDangerNow) {
-          islandStatus.textContent = '⚠️ DANGER';
-          islandStatus.className = 'text-[9px] text-rose-400 font-black tracking-wider';
-          dangerLed.className = 'w-2 h-2 rounded-full bg-rose-500';
+          islandStatus.textContent = '⚠️ 貓咪逼近！快逃！';
+          led.className = 'w-2 h-2 rounded-full bg-rose-500 animate-ping';
         } else {
-          islandStatus.textContent = `L${LEVELS[gameState.currentLevelIdx].level}`;
-          islandStatus.className = 'text-[9px] text-white/85 font-extrabold tracking-wider';
-          dangerLed.className = 'w-2 h-2 rounded-full bg-emerald-400';
+          islandStatus.textContent = '3D 迷宮進行中';
+          led.className = 'w-2 h-2 rounded-full bg-emerald-400';
         }
       }
-
-      checkSmoothPlayerInteractions();
     }
 
-    // Smart BFS-assisted Cat AI (Cat #0 uses real maze shortest-path BFS when within 8 steps; never gets stuck behind walls!)
     function chooseNextCatTarget(cat, idx) {
-      const { grid, player, cats, playerBFSMap } = gameState;
-      const rows = grid.length, cols = grid[0].length;
+      const { grid, player, playerBFSMap } = gameState;
       const cr = Math.round(cat.r), cc = Math.round(cat.c);
-      const cell = grid[cr] && grid[cr][cc];
-      if (!cell) return;
-
-      const moveOptions = [
-        { dr: -1, dc: 0, wall: 'top' },
-        { dr: 1, dc: 0, wall: 'bottom' },
-        { dr: 0, dc: -1, wall: 'left' },
-        { dr: 0, dc: 1, wall: 'right' }
+      const dirs = [
+        { dr: -1, dc: 0, w: 'top' },
+        { dr: 0, dc: 1, w: 'right' },
+        { dr: 1, dc: 0, w: 'bottom' },
+        { dr: 0, dc: -1, w: 'left' }
       ];
+      const cell = grid[cr] && grid[cr][cc];
+      if (!cell || !cell.valid) return;
 
-      const validMoves = [];
-      for (const m of moveOptions) {
-        if (!cell.walls[m.wall]) {
-          const nr = cr + m.dr, nc = cc + m.dc;
-          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc].valid) {
-            validMoves.push({ nr, nc });
+      const options = [];
+      for (const d of dirs) {
+        if (!cell.walls[d.w]) {
+          const nr = cr + d.dr, nc = cc + d.dc;
+          if (grid[nr] && grid[nr][nc] && grid[nr][nc].valid) {
+            options.push({ nr, nc });
           }
         }
       }
-      if (validMoves.length === 0) return;
+      if (!options.length) return;
 
-      let filtered = validMoves.filter(m => !(m.nr === cat.lastR && m.nc === cat.lastC));
-      if (filtered.length === 0) filtered = validMoves;
+      const nonBack = options.filter(o => !(o.nr === cat.lastR && o.nc === cat.lastC));
+      const filtered = nonBack.length > 0 ? nonBack : options;
+      let chosen;
 
-      const uncrowded = filtered.filter(
-        m => !cats.some(other => other.id !== cat.id && other.targetR === m.nr && other.targetC === m.nc)
-      );
-      if (uncrowded.length > 0) filtered = uncrowded;
-
-      const shielded = isPlayerProtected();
-      let chosen = filtered[0];
-
-      if (shielded) {
-        // Flee away from shielded player
+      if (isPlayerProtected()) {
+        // Cats flee while player has 3-second spawn protection shield
         filtered.sort((a, b) => Math.hypot(b.nr - player.r, b.nc - player.c) - Math.hypot(a.nr - player.r, a.nc - player.c));
         chosen = filtered[0];
-      } else if (playerBFSMap && playerBFSMap[cr] && playerBFSMap[cr][cc] > 0 && playerBFSMap[cr][cc] <= 9 && (idx === 0 || Math.random() < 0.55)) {
-        // True BFS maze-path pursuit!
+      } else if (playerBFSMap && playerBFSMap[cr] && playerBFSMap[cr][cc] > 0 && playerBFSMap[cr][cc] <= 8 && (idx === 0 || Math.random() < 0.45)) {
+        // Smart BFS shortest-path pursuit for Lead Cat #0 within 8 steps
         filtered.sort((a, b) => {
           const da = playerBFSMap[a.nr][a.nc] >= 0 ? playerBFSMap[a.nr][a.nc] : 999;
           const db = playerBFSMap[b.nr][b.nc] >= 0 ? playerBFSMap[b.nr][b.nc] : 999;
           return da - db;
         });
         chosen = filtered[0];
-      } else if (Math.random() < (idx === 0 ? 0.6 : 0.35)) {
+      } else if (Math.random() < (idx === 0 ? 0.55 : 0.30)) {
         filtered.sort((a, b) => Math.hypot(a.nr - player.r, a.nc - player.c) - Math.hypot(b.nr - player.r, b.nc - player.c));
         chosen = filtered[0];
       } else {
@@ -2160,7 +2471,7 @@
 
       let newlyRescued = false;
       babies.forEach(b => {
-        if (!b.rescued && Math.hypot(b.r - player.r, b.c - player.c) < 0.58) {
+        if (!b.rescued && Math.hypot(b.r - player.r, b.c - player.c) < 0.62) {
           b.rescued = true;
           newlyRescued = true;
           gameState.score += 150;
@@ -2171,57 +2482,55 @@
 
       const rescuedCount = babies.filter(b => b.rescued).length;
       if (newlyRescued) {
-        if (rescuedCount === spec.babies) {
+        if (rescuedCount === spec.babies && !exitCell.unlocked) {
           exitCell.unlocked = true;
-          spawnWorldJuice(exitCell.r, exitCell.c, '#34d399', 18, '🚪 出口開啟!');
-          showToast('🚪 出口已開啟！', 'bg-emerald-300 text-slate-950');
+          showToast('✨ 出口已解鎖！快前往綠色光柱！', 'bg-emerald-400 text-slate-950');
         }
         updatePlayerBFS(true);
-        updateHUDCountersOnly();
+        updateFullLevelUI();
       }
 
-      if (exitCell.unlocked && Math.hypot(exitCell.r - player.r, exitCell.c - player.c) < 0.58) {
-        gameState.score += 500 + spec.level * 100;
-        sound.playVictoryFanfare();
+      if (exitCell.unlocked && Math.hypot(exitCell.r - player.r, exitCell.c - player.c) < 0.62) {
         handleSeamlessLevelClear();
         return;
       }
 
       if (!isPlayerProtected()) {
-        const hitCat = cats.find(cat => Math.hypot(cat.r - player.r, cat.c - player.c) < 0.44);
-        if (hitCat) triggerHeavenDeathSequence();
+        for (const cat of cats) {
+          if (Math.hypot(cat.r - player.r, cat.c - player.c) < 0.50) {
+            triggerHeavenDeathSequence();
+            return;
+          }
+        }
       }
     }
 
     function triggerHeavenDeathSequence() {
       gameState.status = 'dying_heaven';
-      gameState.player.moveDir = { dr: 0, dc: 0 };
-      gameState.player.heldDir = null;
-      gameState.player.bufferedDir = null;
+      gameState.lives--;
       gameState.virtualStick.active = false;
       highlightActiveDpadButton(null, 0, 0);
-
+      gameState.player.heldDir = null;
+      gameState.player.bufferedDir = null;
       sound.stopChaseBGM();
-      sound.playCatCrashAndHeaven();
-      document.getElementById('tension-vignette').style.opacity = '0.9';
-
+      sound.playHeavenAscensionSFX();
       gameState.deathAnim = {
-        active: true, startTime: performance.now(), duration: 2000,
-        r: gameState.player.r, c: gameState.player.c
+        active: true,
+        startTime: performance.now(),
+        duration: 2000,
+        r: gameState.player.r,
+        c: gameState.player.c
       };
-
-      gameState.lives--;
       updateHUDCountersOnly();
-      showToast('👼 升天中...', 'bg-amber-300 text-slate-950');
+      showToast('👼 鼠媽媽升天了...', 'bg-sky-200 text-slate-900');
     }
 
-    function updateDeathHeavenAnimation(now) {
-      if (now - gameState.deathAnim.startTime >= gameState.deathAnim.duration) {
+    function updateDeathHeavenAnimation() {
+      const elapsed = performance.now() - gameState.deathAnim.startTime;
+      if (elapsed >= gameState.deathAnim.duration) {
         gameState.deathAnim.active = false;
-        document.getElementById('tension-vignette').style.opacity = '0';
         if (gameState.lives > 0) {
           loadLevel(gameState.currentLevelIdx, true, false);
-          showToast(`❤️ 剩餘 ${gameState.lives} 命`, 'bg-yellow-300 text-slate-950');
         } else {
           handleOutOfThreeLivesSeamless();
         }
@@ -2229,572 +2538,285 @@
     }
 
     // =========================================================================
-    // 10. APP-STORE QUALITY CANVAS RENDERER (SOFT SHADOWS, BLINK, SHIELD ARC)
+    // 11. 3D SCENE SYNC & 2D OVERLAY RENDERING
     // =========================================================================
     function resizeCanvas() {
       const wrapper = document.getElementById('canvas-wrapper');
       const rect = wrapper.getBoundingClientRect();
-      gameState.canvasSize = {
-        width: rect.width || 320,
-        height: rect.height || 320,
-        left: rect.left,
-        top: rect.top
-      };
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      canvas.width = Math.floor(gameState.canvasSize.width * dpr);
-      canvas.height = Math.floor(gameState.canvasSize.height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      renderMazeFrame();
+      const w = Math.max(240, Math.floor(rect.width));
+      const h = Math.max(240, Math.floor(rect.height));
+      gameState.canvasSize = { width: w, height: h, left: rect.left, top: rect.top };
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      fxCanvas.width = Math.floor(w * dpr);
+      fxCanvas.height = Math.floor(h * dpr);
+      fxCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      if (engine3D.available && engine3D.renderer && engine3D.camera) {
+        engine3D.renderer.setSize(w, h, false);
+        engine3D.camera.aspect = w / h;
+        engine3D.camera.updateProjectionMatrix();
+      }
+      renderFrame();
     }
 
-    function drawArticulatedMouse(ctx, x, y, radius, angle, walkPhase, isMother, contrastHex, shieldProgress) {
-      ctx.save();
-      ctx.translate(x, y);
+    function syncAndRender3DScene(nowSec) {
+      if (!engine3D.available || !engine3D.renderer || !engine3D.scene) return;
+      const { player, babies, cats, exitCell, camera, deathAnim } = gameState;
 
-      // Soft ground contact shadow
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
-      ctx.beginPath();
-      ctx.ellipse(2, 4, radius * 0.95, radius * 0.65, 0, 0, Math.PI * 2);
-      ctx.fill();
+      // 1. Update 3D Camera (elevated 3/4 isometric perspective following Mother Mouse)
+      const span = Math.max(8, camera.visibleSpan);
+      const camHeight = span * 1.18;
+      const camBack = span * 0.56;
+      engine3D.camera.position.set(camera.c, camHeight, camera.r + camBack);
+      engine3D.camera.lookAt(camera.c, 0.15, camera.r - 0.15);
 
-      if (isMother) {
-        // Spotlight or Shield Countdown Ring
-        ctx.beginPath();
-        ctx.arc(0, 0, radius * 1.48, 0, Math.PI * 2);
-        ctx.fillStyle = shieldProgress > 0 ? 'rgba(34, 211, 238, 0.22)' : 'rgba(255, 255, 255, 0.08)';
-        ctx.fill();
-        ctx.lineWidth = shieldProgress > 0 ? 2.6 : 1.6;
-        ctx.strokeStyle = shieldProgress > 0 ? '#22d3ee' : contrastHex;
-        if (shieldProgress > 0) {
-          ctx.beginPath();
-          ctx.arc(0, 0, radius * 1.48, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * shieldProgress);
-          ctx.stroke();
-        } else {
-          ctx.stroke();
-        }
-      } else {
-        ctx.beginPath();
-        ctx.arc(0, 0, radius * 1.32, 0, Math.PI * 2);
-        ctx.strokeStyle = contrastHex;
-        ctx.lineWidth = 1.4;
-        ctx.stroke();
-      }
+      // Follow shadow light with player so shadows stay razor-sharp on large 44x44 mazes
+      engine3D.dirLight.position.set(camera.c + 8, 18, camera.r + 10);
+      engine3D.dirLight.target.position.set(camera.c, 0, camera.r);
+      engine3D.dirLight.target.updateMatrixWorld();
 
-      ctx.rotate(angle);
-      const wag = Math.sin(walkPhase) * 0.38;
-      const pawSwing = Math.sin(walkPhase) * (radius * 0.28);
+      // 2. Mother Mouse 3D Transform + Animation + Spawn Shield + Heaven Ascension
+      if (engine3D.playerMesh) {
+        const isMoving = player.moveDir.dr !== 0 || player.moveDir.dc !== 0;
+        let py = isMoving ? Math.abs(Math.sin(player.walkPhase)) * 0.10 : 0;
 
-      // Tail
-      ctx.beginPath();
-      ctx.moveTo(-radius * 0.75, 0);
-      ctx.quadraticCurveTo(-radius * 1.45, wag * radius * 1.25, -radius * 2.08, -wag * radius * 0.7);
-      ctx.strokeStyle = '#f472b6';
-      ctx.lineWidth = Math.max(1.8, radius * 0.18);
-      ctx.lineCap = 'round';
-      ctx.stroke();
-
-      // 4 Paws
-      ctx.fillStyle = '#fbcfe8';
-      const pawR = radius * 0.22;
-      ctx.beginPath();
-      ctx.arc(radius * 0.38 + pawSwing, -radius * 0.56, pawR, 0, Math.PI * 2);
-      ctx.arc(radius * 0.38 - pawSwing, radius * 0.56, pawR, 0, Math.PI * 2);
-      ctx.arc(-radius * 0.38 - pawSwing, -radius * 0.54, pawR, 0, Math.PI * 2);
-      ctx.arc(-radius * 0.38 + pawSwing, radius * 0.54, pawR, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Torso
-      ctx.fillStyle = isMother ? '#d97706' : '#fbbf24';
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.4;
-      ctx.beginPath();
-      ctx.ellipse(-radius * 0.1, 0, radius * 0.82, radius * 0.58, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#fef3c7';
-      ctx.beginPath();
-      ctx.ellipse(-radius * 0.05, 0, radius * 0.48, radius * 0.32, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Head & Snout
-      ctx.fillStyle = isMother ? '#f59e0b' : '#fde047';
-      ctx.beginPath();
-      ctx.moveTo(radius * 1.05, 0);
-      ctx.quadraticCurveTo(radius * 0.45, -radius * 0.58, 0, -radius * 0.45);
-      ctx.quadraticCurveTo(-radius * 0.25, 0, 0, radius * 0.45);
-      ctx.quadraticCurveTo(radius * 0.45, radius * 0.58, radius * 1.05, 0);
-      ctx.fill();
-      ctx.stroke();
-
-      // Rounded Mouse Ears
-      const earX = radius * 0.12, earY = radius * 0.52, earR = radius * 0.42;
-      ctx.fillStyle = isMother ? '#b45309' : '#eab308';
-      ctx.beginPath();
-      ctx.arc(earX, -earY, earR, 0, Math.PI * 2);
-      ctx.arc(earX, earY, earR, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = '#fda4af';
-      ctx.beginPath();
-      ctx.arc(earX, -earY, earR * 0.62, 0, Math.PI * 2);
-      ctx.arc(earX, earY, earR * 0.62, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (isMother) {
-        ctx.fillStyle = '#ec4899';
-        ctx.beginPath();
-        ctx.moveTo(earX, 0); ctx.lineTo(earX - radius * 0.22, -radius * 0.28); ctx.lineTo(earX + radius * 0.22, -radius * 0.28); ctx.closePath();
-        ctx.moveTo(earX, 0); ctx.lineTo(earX - radius * 0.22, radius * 0.28); ctx.lineTo(earX + radius * 0.22, radius * 0.28); ctx.closePath();
-        ctx.fill();
-      }
-
-      // Expressive Eyes + Blink
-      const blink = (performance.now() % 3400) < 110;
-      ctx.fillStyle = '#0f172a';
-      if (!blink) {
-        ctx.beginPath();
-        ctx.arc(radius * 0.52, -radius * 0.22, radius * 0.13, 0, Math.PI * 2);
-        ctx.arc(radius * 0.52, radius * 0.22, radius * 0.13, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Pink Nose & Whiskers
-      ctx.fillStyle = '#e11d48';
-      ctx.beginPath();
-      ctx.arc(radius * 1.02, 0, radius * 0.15, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(radius * 0.85, -radius * 0.1); ctx.lineTo(radius * 1.15, -radius * 0.55);
-      ctx.moveTo(radius * 0.85, -radius * 0.05); ctx.lineTo(radius * 1.22, -radius * 0.28);
-      ctx.moveTo(radius * 0.85, radius * 0.1); ctx.lineTo(radius * 1.15, radius * 0.55);
-      ctx.moveTo(radius * 0.85, radius * 0.05); ctx.lineTo(radius * 1.22, radius * 0.28);
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
-    function drawArticulatedCat(ctx, x, y, radius, cat) {
-      ctx.save();
-      ctx.translate(x, y);
-
-      // Ground contact shadow
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
-      ctx.beginPath();
-      ctx.ellipse(2, 5, radius * 1.05, radius * 0.65, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(0, 0, radius * 1.44, 0, Math.PI * 2);
-      ctx.fillStyle = cat.alerted ? 'rgba(244, 63, 94, 0.34)' : 'rgba(244, 63, 94, 0.16)';
-      ctx.fill();
-
-      ctx.save();
-      ctx.rotate(cat.visualAngle);
-      const stride = Math.sin(cat.stridePhase);
-      ctx.rotate(Math.cos(cat.stridePhase) * 0.08);
-      const pal = cat.palette;
-
-      // S-Curved Tail
-      const tailWag = Math.sin(cat.stridePhase * 0.8) * radius * 0.65;
-      ctx.beginPath();
-      ctx.moveTo(-radius * 0.85, 0);
-      ctx.bezierCurveTo(-radius * 1.4, tailWag, -radius * 1.75, -tailWag, -radius * 2.15, tailWag * 0.5);
-      ctx.strokeStyle = pal.body;
-      ctx.lineWidth = Math.max(3, radius * 0.28);
-      ctx.lineCap = 'round';
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(-radius * 2.12, tailWag * 0.48, radius * 0.16, 0, Math.PI * 2);
-      ctx.fillStyle = '#f8fafc';
-      ctx.fill();
-
-      // 4 White-Gloved Paws
-      const pawOffset = stride * radius * 0.42;
-      ctx.fillStyle = '#f8fafc';
-      ctx.strokeStyle = pal.stripe;
-      ctx.lineWidth = 1.2;
-      const drawPaw = (px, py) => {
-        ctx.beginPath();
-        ctx.ellipse(px, py, radius * 0.28, radius * 0.20, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-      };
-      drawPaw(radius * 0.55 + pawOffset, -radius * 0.58);
-      drawPaw(radius * 0.55 - pawOffset, radius * 0.58);
-      drawPaw(-radius * 0.48 - pawOffset, -radius * 0.55);
-      drawPaw(-radius * 0.48 + pawOffset, radius * 0.55);
-
-      // Torso + Tabby Stripes
-      ctx.fillStyle = pal.body;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.ellipse(-radius * 0.12, 0, radius * 0.92, radius * 0.54, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.strokeStyle = pal.stripe;
-      ctx.lineWidth = Math.max(1.8, radius * 0.14);
-      [-0.45, -0.15, 0.15].forEach(off => {
-        ctx.beginPath();
-        ctx.moveTo(radius * off, -radius * 0.42);
-        ctx.lineTo(radius * (off - 0.08), radius * 0.42);
-        ctx.stroke();
-      });
-
-      // Head + Pointed Ears
-      ctx.fillStyle = pal.body;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(radius * 0.52, 0, radius * 0.58, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      [-1, 1].forEach(signY => {
-        ctx.fillStyle = pal.body;
-        ctx.beginPath();
-        ctx.moveTo(radius * 0.35, signY * radius * 0.35);
-        ctx.lineTo(radius * 0.15, signY * radius * 0.98);
-        ctx.lineTo(radius * 0.72, signY * radius * 0.52);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = pal.earInner;
-        ctx.beginPath();
-        ctx.moveTo(radius * 0.38, signY * radius * 0.42);
-        ctx.lineTo(radius * 0.24, signY * radius * 0.84);
-        ctx.lineTo(radius * 0.62, signY * radius * 0.50);
-        ctx.closePath();
-        ctx.fill();
-      });
-
-      // Fierce Slit Eyes (Glow fiery amber-red when alerted!)
-      ctx.fillStyle = cat.alerted ? '#fb7185' : '#fde047';
-      ctx.beginPath();
-      ctx.ellipse(radius * 0.72, -radius * 0.24, radius * 0.16, radius * 0.22, 0.2, 0, Math.PI * 2);
-      ctx.ellipse(radius * 0.72, radius * 0.24, radius * 0.16, radius * 0.22, -0.2, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#0f172a';
-      ctx.beginPath();
-      ctx.ellipse(radius * 0.76, -radius * 0.24, radius * 0.06, radius * 0.18, 0, 0, Math.PI * 2);
-      ctx.ellipse(radius * 0.76, radius * 0.24, radius * 0.06, radius * 0.18, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Muzzle, Nose & Whiskers
-      ctx.fillStyle = '#f8fafc';
-      ctx.beginPath();
-      ctx.arc(radius * 0.95, -radius * 0.11, radius * 0.14, 0, Math.PI * 2);
-      ctx.arc(radius * 0.95, radius * 0.11, radius * 0.14, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#fb7185';
-      ctx.beginPath();
-      ctx.arc(radius * 1.04, 0, radius * 0.11, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(radius * 0.92, -radius * 0.18); ctx.lineTo(radius * 1.15, -radius * 0.72);
-      ctx.moveTo(radius * 0.95, -radius * 0.12); ctx.lineTo(radius * 1.25, -radius * 0.42);
-      ctx.moveTo(radius * 0.92, radius * 0.18); ctx.lineTo(radius * 1.15, radius * 0.72);
-      ctx.moveTo(radius * 0.95, radius * 0.12); ctx.lineTo(radius * 1.25, radius * 0.42);
-      ctx.stroke();
-      ctx.restore();
-
-      // Alert Exclamation Bubble above cat when chasing closely
-      if (cat.alerted) {
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath();
-        ctx.arc(0, -radius * 1.65, radius * 0.42, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `900 ${Math.max(10, Math.floor(radius * 0.65))}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('!', 0, -radius * 1.63);
-      }
-
-      ctx.restore();
-    }
-
-    function drawHeavenAscension(ctx, x, y, radius, progress) {
-      ctx.save();
-      const floatUpY = y - progress * 115;
-      const swayX = x + Math.sin(progress * Math.PI * 5) * 14;
-      const alpha = Math.max(0, 1 - Math.pow(progress, 2.2));
-
-      const beamGrad = ctx.createLinearGradient(swayX, floatUpY - 140, swayX, y + 30);
-      beamGrad.addColorStop(0, `rgba(253, 224, 71, ${0.55 * alpha})`);
-      beamGrad.addColorStop(1, 'rgba(253, 224, 71, 0)');
-      ctx.fillStyle = beamGrad;
-      ctx.beginPath();
-      ctx.moveTo(swayX - radius * 2.4, floatUpY - 140);
-      ctx.lineTo(swayX + radius * 2.4, floatUpY - 140);
-      ctx.lineTo(swayX + radius * 1.3, y + 25);
-      ctx.lineTo(swayX - radius * 1.3, y + 25);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.translate(swayX, floatUpY);
-      ctx.globalAlpha = alpha;
-
-      const wingFlap = Math.sin(progress * Math.PI * 14) * 0.45;
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#bae6fd';
-      ctx.lineWidth = 1.8;
-
-      [-1, 1].forEach(sign => {
-        ctx.save();
-        ctx.rotate(sign * (0.35 - wingFlap));
-        ctx.beginPath();
-        ctx.ellipse(sign * radius * 1.15, 0, radius * 0.95, radius * 0.45, sign * 0.2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-      });
-
-      ctx.fillStyle = '#fef9c3';
-      ctx.strokeStyle = '#facc15';
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.arc(0, 0, radius * 0.85, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(-radius * 0.65, -radius * 0.65, radius * 0.42, 0, Math.PI * 2);
-      ctx.arc(radius * 0.65, -radius * 0.65, radius * 0.42, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.arc(-radius * 0.28, -radius * 0.1, radius * 0.16, Math.PI, 0);
-      ctx.moveTo(radius * 0.12, -radius * 0.1);
-      ctx.arc(radius * 0.28, -radius * 0.1, radius * 0.16, Math.PI, 0);
-      ctx.stroke();
-
-      ctx.strokeStyle = '#facc15';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.ellipse(0, -radius * 1.35, radius * 0.72, radius * 0.22, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function renderMazeFrame() {
-      const { width, height } = gameState.canvasSize;
-      if (!width || !height || !gameState.grid.length) return;
-      if (gameState.mazeCache.dirty) rebuildStaticMazeCache();
-
-      const spec = LEVELS[gameState.currentLevelIdx];
-      const { player, babies, cats, exitCell, camera, mazeCache, virtualStick } = gameState;
-      const rows = spec.rows, cols = spec.cols;
-
-      ctx.clearRect(0, 0, width, height);
-
-      const visibleSpan = Math.max(8, camera.visibleSpan);
-      const cellSize = Math.min(width, height) / visibleSpan;
-      const halfSpanR = (height / cellSize) / 2;
-      const halfSpanC = (width / cellSize) / 2;
-
-      let camR = camera.r + 0.5, camC = camera.c + 0.5;
-      camR = rows > halfSpanR * 2 ? Math.max(halfSpanR, Math.min(rows - halfSpanR, camR)) : rows / 2;
-      camC = cols > halfSpanC * 2 ? Math.max(halfSpanC, Math.min(cols - halfSpanC, camC)) : cols / 2;
-
-      const offsetX = width / 2 - camC * cellSize;
-      const offsetY = height / 2 - camR * cellSize;
-
-      // 1. Blit pre-rendered architectural maze
-      ctx.drawImage(mazeCache.canvas, 0, 0, mazeCache.canvas.width, mazeCache.canvas.height, offsetX, offsetY, cols * cellSize, rows * cellSize);
-
-      // 2. Guide Overlay (Strictly Levels 1–3 when toggled ON)
-      if (isGuideAllowedForCurrentLevel() && gameState.showBFSOverlay && gameState.bfsPathsToTargets.length > 0) {
-        ctx.save();
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        gameState.bfsPathsToTargets.forEach(pathObj => {
-          const pts = pathObj.points;
-          if (pts.length < 2) return;
-          ctx.beginPath();
-          pts.forEach(([pr, pc], i) => {
-            const vx = offsetX + (pc + 0.5) * cellSize;
-            const vy = offsetY + (pr + 0.5) * cellSize;
-            if (i === 0) ctx.moveTo(vx, vy); else ctx.lineTo(vx, vy);
-          });
-          ctx.strokeStyle = pathObj.type === 'exit' ? 'rgba(52, 211, 153, 0.84)' : 'rgba(250, 204, 21, 0.8)';
-          ctx.lineWidth = Math.max(3, cellSize * 0.15);
-          ctx.setLineDash([6, 6]);
-          ctx.stroke();
-        });
-        ctx.restore();
-      }
-
-      const now = performance.now();
-
-      // 3. Exit Portal with pulsing glow when unlocked
-      const exX = offsetX + (exitCell.c + 0.5) * cellSize;
-      const exY = offsetY + (exitCell.r + 0.5) * cellSize;
-      ctx.save();
-      if (exitCell.unlocked) {
-        const pulse = 1 + Math.sin(now * 0.008) * 0.15;
-        ctx.beginPath();
-        ctx.arc(exX, exY, cellSize * 0.56 * pulse, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.28)';
-        ctx.fill();
-      }
-      ctx.beginPath();
-      ctx.arc(exX, exY, cellSize * 0.42, 0, Math.PI * 2);
-      ctx.fillStyle = exitCell.unlocked ? '#10b981' : 'rgba(255,255,255,0.22)';
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = exitCell.unlocked ? '#a7f3d0' : spec.contrastHex;
-      ctx.stroke();
-      ctx.font = `${Math.floor(cellSize * 0.42)}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(exitCell.unlocked ? '🚪' : '🧀', exX, exY);
-      ctx.restore();
-
-      // 4. World FX Particles (dust & rescue sparkles)
-      gameState.fxParticles.forEach(pt => {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
-        ctx.fillStyle = pt.color;
-        ctx.beginPath();
-        ctx.arc(offsetX + (pt.c + 0.5) * cellSize, offsetY + (pt.r + 0.5) * cellSize, pt.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      });
-
-      // 5. Unrescued Baby Mice
-      babies.forEach(b => {
-        if (b.rescued) return;
-        const bx = offsetX + (b.c + 0.5) * cellSize;
-        const by = offsetY + (b.r + 0.5) * cellSize + Math.sin(now / 200 + b.bobPhase) * (cellSize * 0.06);
-        drawArticulatedMouse(ctx, bx, by, cellSize * 0.28, Math.sin(now / 450 + b.bobPhase) * 0.5, now / 120 + b.bobPhase, false, spec.contrastHex, 0, false);
-      });
-
-      // 6. Rescued Baby Mice Trail
-      const rescuedBabies = babies.filter(b => b.rescued);
-      rescuedBabies.forEach((b, i) => {
-        const idxTrail = Math.min((i + 1) * 2, gameState.rescuedTrail.length - 1);
-        const tp = gameState.rescuedTrail[idxTrail] || player;
-        drawArticulatedMouse(ctx, offsetX + (tp.c + 0.5) * cellSize, offsetY + (tp.r + 0.5) * cellSize, cellSize * 0.24, tp.angle || 0, player.walkPhase - i, false, spec.contrastHex, 0);
-      });
-
-      // 7. Patrol Cats
-      cats.forEach(cat => {
-        drawArticulatedCat(ctx, offsetX + (cat.c + 0.5) * cellSize, offsetY + (cat.r + 0.5) * cellSize, cellSize * 0.39, cat);
-      });
-
-      // 8. Mother Mouse or 2-Second Heaven Ascension
-      const px = offsetX + (player.c + 0.5) * cellSize;
-      const py = offsetY + (player.r + 0.5) * cellSize;
-      if (gameState.status === 'dying_heaven' && gameState.deathAnim.active) {
-        const progress = Math.min(1, (now - gameState.deathAnim.startTime) / gameState.deathAnim.duration);
-        drawHeavenAscension(ctx, px, py, cellSize * 0.42, progress);
-      } else {
-        const shieldRem = Math.max(0, (gameState.shieldUntil - Date.now()) / 3000);
-        drawArticulatedMouse(ctx, px, py, cellSize * 0.38, player.visualAngle, player.walkPhase, true, spec.contrastHex, shieldRem);
-      }
-
-      // 9. Floating Score Popups
-      gameState.floatingTexts.forEach(ft => {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, ft.life / ft.maxLife);
-        ctx.font = '900 13px "Noto Sans TC", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 3;
-        const fx = offsetX + (ft.c + 0.5) * cellSize;
-        const fy = offsetY + (ft.r + 0.5) * cellSize - 10;
-        ctx.strokeText(ft.text, fx, fy);
-        ctx.fillStyle = ft.color;
-        ctx.fillText(ft.text, fx, fy);
-        ctx.restore();
-      });
-
-      // 10. Floating Canvas Stick Ring
-      if (virtualStick.active && gameState.status === 'playing') {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(virtualStick.originX, virtualStick.originY, 34, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.55)';
-        ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.stroke();
-
-        const dx = virtualStick.currX - virtualStick.originX;
-        const dy = virtualStick.currY - virtualStick.originY;
-        const dist = Math.min(26, Math.hypot(dx, dy));
-        const ang = Math.atan2(dy, dx);
-        ctx.beginPath();
-        ctx.arc(virtualStick.originX + Math.cos(ang) * dist, virtualStick.originY + Math.sin(ang) * dist, 14, 0, Math.PI * 2);
-        ctx.fillStyle = '#facc15';
-        ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = '#ffffff';
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // 11. Corner Radar Minimap
-      drawFastCornerMinimap(width, height, spec);
-
-      // 12. Deluxe All-Clear Firecracker Celebration
-      if (gameState.status === 'all_clear_celebration') {
-        drawFirecrackerCelebration(ctx);
-      }
-    }
-
-    function drawFastCornerMinimap(canvasW, canvasH, spec) {
-      const mapSize = 60, pad = 6;
-      const mx = canvasW - mapSize - pad, my = pad;
-      ctx.drawImage(gameState.mazeCache.minimapCanvas, mx, my);
-
-      const scale = (mapSize - 8) / Math.max(spec.cols, spec.rows);
-      const ox = mx + 4, oy = my + 4;
-      ctx.save();
-      ctx.fillStyle = '#10b981';
-      ctx.beginPath();
-      ctx.arc(ox + (gameState.exitCell.c + 0.5) * scale, oy + (gameState.exitCell.r + 0.5) * scale, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (isGuideAllowedForCurrentLevel() && gameState.showBFSOverlay) {
-        ctx.fillStyle = '#fde047';
-        gameState.babies.forEach(b => {
-          if (!b.rescued) {
-            ctx.beginPath();
-            ctx.arc(ox + (b.c + 0.5) * scale, oy + (b.r + 0.5) * scale, 2, 0, Math.PI * 2);
-            ctx.fill();
+        if (gameState.status === 'dying_heaven' && deathAnim.active) {
+          const prog = Math.min(1, (performance.now() - deathAnim.startTime) / deathAnim.duration);
+          py = prog * 4.2;
+          engine3D.playerMesh.position.set(deathAnim.c, py, deathAnim.r);
+          engine3D.playerMesh.rotation.y = nowSec * 2.5;
+          if (engine3D.playerAngelGroup) {
+            engine3D.playerAngelGroup.visible = true;
+            const flap = Math.sin(nowSec * 18) * 0.45;
+            engine3D.playerAngelGroup.userData.leftWing.rotation.x = flap;
+            engine3D.playerAngelGroup.userData.rightWing.rotation.x = -flap;
           }
+          if (engine3D.heavenBeamMesh) {
+            engine3D.heavenBeamMesh.visible = true;
+            engine3D.heavenBeamMesh.position.set(deathAnim.c, 3.2, deathAnim.r);
+          }
+        } else {
+          engine3D.playerMesh.position.set(player.c, py, player.r);
+          engine3D.playerMesh.rotation.y = -player.visualAngle;
+          if (engine3D.playerAngelGroup) engine3D.playerAngelGroup.visible = false;
+          if (engine3D.heavenBeamMesh) engine3D.heavenBeamMesh.visible = false;
+
+          const ud = engine3D.playerMesh.userData;
+          if (ud.tailPivot) ud.tailPivot.rotation.y = Math.sin(player.walkPhase * 1.4 + nowSec * 4) * 0.38;
+          if (ud.paws) {
+            ud.paws.forEach((paw, i) => {
+              paw.position.x = (i < 2 ? 0.14 : -0.18) + (isMoving ? Math.sin(player.walkPhase + (i % 2 ? Math.PI : 0)) * 0.06 : 0);
+            });
+          }
+        }
+
+        const shieldActive = isPlayerProtected() && gameState.status === 'playing';
+        if (engine3D.playerShieldMesh) {
+          engine3D.playerShieldMesh.visible = shieldActive;
+          if (shieldActive) {
+            const pulse = 1 + Math.sin(nowSec * 10) * 0.05;
+            engine3D.playerShieldMesh.scale.set(pulse, pulse, pulse);
+          }
+        }
+        engine3D.playerLight.position.set(player.c, py + 1.1, player.r);
+        engine3D.playerLight.color.set(shieldActive ? '#22d3ee' : '#fde68a');
+      }
+
+      // 3. Baby Mice (Hopping before rescue -> 3D Conga Line after rescue)
+      let rescuedIdx = 0;
+      babies.forEach((b, i) => {
+        const mesh = engine3D.babyMeshes[i];
+        if (!mesh) return;
+        const ud = mesh.userData;
+        if (!b.rescued) {
+          const hop = Math.abs(Math.sin(nowSec * 5 + b.bobPhase)) * 0.14;
+          mesh.position.set(b.c, hop, b.r);
+          mesh.rotation.y = Math.sin(nowSec * 2 + b.bobPhase) * 0.8;
+          if (ud.beaconRing) {
+            ud.beaconRing.visible = true;
+            const s = 0.9 + Math.sin(nowSec * 5 + b.bobPhase) * 0.15;
+            ud.beaconRing.scale.set(s, s, 1);
+          }
+        } else {
+          rescuedIdx++;
+          const idxTrail = Math.min(rescuedIdx * 2, gameState.rescuedTrail.length - 1);
+          const tp = gameState.rescuedTrail[idxTrail] || player;
+          const hop = Math.abs(Math.sin(player.walkPhase - rescuedIdx * 0.7)) * 0.07;
+          mesh.position.set(tp.c, hop, tp.r);
+          mesh.rotation.y = -(tp.angle || 0);
+          if (ud.beaconRing) ud.beaconRing.visible = false;
+        }
+      });
+
+      // 4. Patrol Cats (Striding + Glowing Red Eyes & ! Alert when chasing)
+      cats.forEach((cat, i) => {
+        const mesh = engine3D.catMeshes[i];
+        if (!mesh) return;
+        mesh.position.set(cat.c, Math.abs(Math.sin(cat.stridePhase)) * 0.05, cat.r);
+        mesh.rotation.y = -cat.visualAngle;
+        const ud = mesh.userData;
+        if (ud.tailPivot) ud.tailPivot.rotation.z = Math.sin(cat.stridePhase * 0.8) * 0.25;
+        if (ud.legs) {
+          ud.legs.forEach((leg, li) => {
+            leg.rotation.z = Math.sin(cat.stridePhase + (li % 2 ? Math.PI : 0)) * 0.35;
+          });
+        }
+        if (ud.eyeMat) {
+          ud.eyeMat.color.set(cat.alerted ? '#ef4444' : '#a3e635');
+          ud.eyeMat.emissive.set(cat.alerted ? '#dc2626' : '#65a30d');
+        }
+        if (ud.alertGroup) {
+          ud.alertGroup.visible = !!cat.alerted;
+          if (cat.alerted) ud.alertGroup.position.y = 0.92 + Math.sin(nowSec * 12) * 0.07;
+        }
+      });
+
+      // 5. 3D Exit Portal Rings & Vertical Beacon Beam
+      if (engine3D.exitGroup) {
+        engine3D.exitRing1.rotation.y = nowSec * 2.2;
+        engine3D.exitRing1.rotation.x = Math.sin(nowSec * 1.5) * 0.3;
+        engine3D.exitRing2.rotation.y = -nowSec * 2.8;
+        engine3D.exitRing2.rotation.z = Math.cos(nowSec * 1.8) * 0.3;
+        if (exitCell.unlocked) {
+          engine3D.exitPadMat.color.set('#10b981');
+          engine3D.exitPadMat.emissive.set('#059669');
+          engine3D.exitRingMat.color.set('#34d399');
+          engine3D.exitBeam.visible = true;
+        } else {
+          engine3D.exitPadMat.color.set('#64748b');
+          engine3D.exitPadMat.emissive.set('#334155');
+          engine3D.exitRingMat.color.set('#94a3b8');
+          engine3D.exitBeam.visible = false;
+        }
+      }
+
+      // 6. Subtle Guide Orb Pulse
+      if (engine3D.guideGroup && engine3D.guideGroup.children.length > 0) {
+        engine3D.guideGroup.children.forEach((orb, idx) => {
+          orb.position.y = 0.24 + Math.sin(nowSec * 6 - idx * 0.45) * 0.06;
         });
       }
 
-      ctx.fillStyle = '#f43f5e';
+      // 7. Sync 3D Dust & Rescue Sparkle Particles
+      if (engine3D.particleInst) {
+        const dummyP = new THREE.Object3D();
+        const maxP = Math.min(48, gameState.fxParticles.length);
+        engine3D.particleInst.count = maxP;
+        for (let i = 0; i < maxP; i++) {
+          const pt = gameState.fxParticles[i];
+          const s = Math.max(0.15, pt.life / pt.maxLife);
+          dummyP.position.set(pt.c, Math.max(0.05, pt.y || 0.15), pt.r);
+          dummyP.scale.set(s, s, s);
+          dummyP.updateMatrix();
+          engine3D.particleInst.setMatrixAt(i, dummyP.matrix);
+        }
+        if (engine3D.particleInst.instanceMatrix) {
+          engine3D.particleInst.instanceMatrix.needsUpdate = true;
+        }
+      }
+
+      engine3D.renderer.render(engine3D.scene, engine3D.camera);
+    }
+
+    function drawCornerMinimap(ctx, w) {
+      if (gameState.minimapCache.dirty) rebuildMinimapCache();
+      const mini = gameState.minimapCache.canvas;
+      const miniSize = mini.width;
+      const pad = 8;
+      const mx = w - miniSize - pad;
+      const my = pad;
+      ctx.drawImage(mini, mx, my);
+
+      const rows = gameState.grid.length, cols = gameState.grid[0].length;
+      const mCell = (miniSize - 8) / Math.max(rows, cols);
+      const mOffX = mx + (miniSize - cols * mCell) / 2;
+      const mOffY = my + (miniSize - rows * mCell) / 2;
+
+      // Exit dot
+      ctx.fillStyle = gameState.exitCell.unlocked ? '#34d399' : '#94a3b8';
+      ctx.fillRect(mOffX + gameState.exitCell.c * mCell - 1.5, mOffY + gameState.exitCell.r * mCell - 1.5, 4.5, 4.5);
+
+      // Unrescued babies
+      ctx.fillStyle = '#fde047';
+      gameState.babies.forEach(b => {
+        if (!b.rescued) {
+          ctx.beginPath();
+          ctx.arc(mOffX + (b.c + 0.5) * mCell, mOffY + (b.r + 0.5) * mCell, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      // Cats
+      ctx.fillStyle = '#fb7185';
       gameState.cats.forEach(cat => {
         ctx.beginPath();
-        ctx.arc(ox + (cat.c + 0.5) * scale, oy + (cat.r + 0.5) * scale, 2.2, 0, Math.PI * 2);
+        ctx.arc(mOffX + (cat.c + 0.5) * mCell, mOffY + (cat.r + 0.5) * mCell, 2.6, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      ctx.fillStyle = spec.contrastHex;
+      // Mother Mouse
+      ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.arc(ox + (gameState.player.c + 0.5) * scale, oy + (gameState.player.r + 0.5) * scale, 2.8, 0, Math.PI * 2);
+      ctx.arc(mOffX + (gameState.player.c + 0.5) * mCell, mOffY + (gameState.player.r + 0.5) * mCell, 3.0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
+    }
+
+    function renderFrame() {
+      if (!gameState.grid.length) return;
+      const nowSec = performance.now() / 1000;
+      syncAndRender3DScene(nowSec);
+
+      const { width: w, height: h } = gameState.canvasSize;
+      fxCtx.clearRect(0, 0, w, h);
+
+      // Floating Score Popups (projected near center-top of Mother Mouse)
+      if (gameState.floatingTexts.length > 0) {
+        fxCtx.save();
+        fxCtx.font = '900 14px "Noto Sans TC", sans-serif';
+        fxCtx.textAlign = 'center';
+        gameState.floatingTexts.forEach(ft => {
+          const alpha = Math.max(0, ft.life / ft.maxLife);
+          const sx = w * 0.5 + (ft.c - gameState.camera.c) * 34;
+          const sy = h * 0.45 + (ft.r - gameState.camera.r) * 30 - (1 - alpha) * 28;
+          fxCtx.globalAlpha = alpha;
+          fxCtx.fillStyle = '#0f172a';
+          fxCtx.fillText(ft.text, sx + 1, sy + 1);
+          fxCtx.fillStyle = ft.color;
+          fxCtx.fillText(ft.text, sx, sy);
+        });
+        fxCtx.restore();
+      }
+
+      // Floating 4-Way Touch Stick Visual on Canvas
+      if (gameState.virtualStick.active) {
+        const vs = gameState.virtualStick;
+        fxCtx.save();
+        fxCtx.strokeStyle = 'rgba(255,255,255,0.45)';
+        fxCtx.lineWidth = 2;
+        fxCtx.beginPath();
+        fxCtx.arc(vs.originX, vs.originY, 28, 0, Math.PI * 2);
+        fxCtx.stroke();
+        fxCtx.fillStyle = 'rgba(250, 204, 21, 0.78)';
+        fxCtx.beginPath();
+        fxCtx.arc(vs.currX, vs.currY, 12, 0, Math.PI * 2);
+        fxCtx.fill();
+        fxCtx.restore();
+      }
+
+      // Top-Right Corner Radar Minimap
+      if (gameState.status !== 'all_clear_celebration') {
+        drawCornerMinimap(fxCtx, w);
+      }
+
+      // Level 20 Deluxe Firecracker & Fireworks Celebration
+      if (gameState.status === 'all_clear_celebration') {
+        drawFirecrackerCelebration(fxCtx, w, h);
+      }
     }
 
     // =========================================================================
-    // 11. STRICT 4-WAY CARDINAL CONTROLS (RIGHT D-PAD, CANVAS STICK, KEYBOARD)
+    // 12. STRICT 4-WAY CARDINAL CONTROLS (RIGHT D-PAD, CANVAS STICK, KEYBOARD)
     // =========================================================================
     function highlightActiveDpadButton(dirCode, nubDx = 0, nubDy = 0) {
       const map = { U: 'dpad-up', D: 'dpad-down', L: 'dpad-left', R: 'dpad-right' };
@@ -2842,7 +2864,7 @@
         return;
       }
 
-      // Perpendicular turn buffering (280ms window) + early-cell snap turn (only on fresh dir change)
+      // Perpendicular turn buffering (280ms window) + guarded early-cell snap turn
       if (p.moveDir.dr !== 0 || p.moveDir.dc !== 0) {
         if (vec.dr !== p.moveDir.dr || vec.dc !== p.moveDir.dc) {
           const distFromOrigin = Math.hypot(p.r - p.fromR, p.c - p.fromC);
@@ -2858,6 +2880,16 @@
           }
         }
       }
+    }
+
+    function pickCardinalWithHysteresis(dx, dy) {
+      const cur = gameState.player.heldDir;
+      if (cur && cur.dc !== 0) {
+        return Math.abs(dy) > Math.abs(dx) * 1.18 ? (dy > 0 ? 'D' : 'U') : (dx >= 0 ? 'R' : 'L');
+      } else if (cur && cur.dr !== 0) {
+        return Math.abs(dx) > Math.abs(dy) * 1.18 ? (dx > 0 ? 'R' : 'L') : (dy >= 0 ? 'D' : 'U');
+      }
+      return Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'R' : 'L') : (dy > 0 ? 'D' : 'U');
     }
 
     function bindControls() {
@@ -2878,7 +2910,7 @@
         const val = parseInt(e.target.value, 10);
         gameState.camera.visibleSpan = Math.max(8, val);
         document.getElementById('home-cam-label').textContent = `${val}×${val}`;
-        renderMazeFrame();
+        renderFrame();
       });
 
       document.getElementById('btn-Pause').addEventListener('click', togglePause);
@@ -2889,7 +2921,7 @@
         gameState.showBFSOverlay = !gameState.showBFSOverlay;
         updatePlayerBFS(true);
         updateFullLevelUI();
-        renderMazeFrame();
+        renderFrame();
       });
 
       document.getElementById('canvas-overlay').addEventListener('pointerdown', (e) => {
@@ -2900,7 +2932,7 @@
         }
       });
 
-      // Right-Side Strict 4-Way D-Pad
+      // Right-Side Strict 4-Way D-Pad with 1.18x Diagonal Hysteresis
       const dpadContainer = document.getElementById('dpad-pad');
       let dpadPointerId = null;
       let dpadCenter = { x: 0, y: 0 };
@@ -2913,15 +2945,7 @@
         if (dist < 8) { setDirectDpadDirection(null, 0, 0); return; }
         const clampDist = Math.min(14, dist * 0.32);
         const ang = Math.atan2(dy, dx);
-        const cur = gameState.player.heldDir;
-        let code;
-        if (cur && cur.dc !== 0) {
-          code = Math.abs(dy) > Math.abs(dx) * 1.18 ? (dy > 0 ? 'D' : 'U') : (dx >= 0 ? 'R' : 'L');
-        } else if (cur && cur.dr !== 0) {
-          code = Math.abs(dx) > Math.abs(dy) * 1.18 ? (dx > 0 ? 'R' : 'L') : (dy >= 0 ? 'D' : 'U');
-        } else {
-          code = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'R' : 'L') : (dy > 0 ? 'D' : 'U');
-        }
+        const code = pickCardinalWithHysteresis(dx, dy);
         setDirectDpadDirection(code, Math.cos(ang) * clampDist, Math.sin(ang) * clampDist);
       };
 
@@ -2952,20 +2976,20 @@
       dpadContainer.addEventListener('pointercancel', stopDpad);
 
       // Canvas Floating 4-Way Stick
-      canvas.addEventListener('pointerdown', (e) => {
+      webglCanvas.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         if (gameState.status !== 'playing') return;
         if (!sound.ctx) { sound.init(); sound.startChaseBGM(); }
         const rect = document.getElementById('canvas-wrapper').getBoundingClientRect();
         gameState.canvasSize = { width: rect.width, height: rect.height, left: rect.left, top: rect.top };
-        if (canvas.setPointerCapture) {
-          try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+        if (webglCanvas.setPointerCapture) {
+          try { webglCanvas.setPointerCapture(e.pointerId); } catch (_) {}
         }
         const lx = e.clientX - rect.left, ly = e.clientY - rect.top;
         gameState.virtualStick = { active: true, pointerId: e.pointerId, originX: lx, originY: ly, currX: lx, currY: ly };
       });
 
-      canvas.addEventListener('pointermove', (e) => {
+      webglCanvas.addEventListener('pointermove', (e) => {
         const vs = gameState.virtualStick;
         if (!vs.active || vs.pointerId !== e.pointerId) return;
         e.preventDefault();
@@ -2979,15 +3003,7 @@
           vs.originX = vs.currX - Math.cos(ang) * 28;
           vs.originY = vs.currY - Math.sin(ang) * 28;
         }
-        const cur = gameState.player.heldDir;
-        let code;
-        if (cur && cur.dc !== 0) {
-          code = Math.abs(dy) > Math.abs(dx) * 1.18 ? (dy > 0 ? 'D' : 'U') : (dx >= 0 ? 'R' : 'L');
-        } else if (cur && cur.dr !== 0) {
-          code = Math.abs(dx) > Math.abs(dy) * 1.18 ? (dx > 0 ? 'R' : 'L') : (dy >= 0 ? 'D' : 'U');
-        } else {
-          code = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'R' : 'L') : (dy > 0 ? 'D' : 'U');
-        }
+        const code = pickCardinalWithHysteresis(dx, dy);
         setDirectDpadDirection(code, 0, 0);
       });
 
@@ -2998,10 +3014,10 @@
           setDirectDpadDirection(null, 0, 0);
         }
       };
-      canvas.addEventListener('pointerup', endCanvasStick);
-      canvas.addEventListener('pointercancel', endCanvasStick);
+      webglCanvas.addEventListener('pointerup', endCanvasStick);
+      webglCanvas.addEventListener('pointercancel', endCanvasStick);
 
-      // Keyboard Controls
+      // Keyboard Controls (WASD / Arrows — NO Dash Key)
       const heldDirs = [];
       const keyToCode = (k) => {
         if (k === 'ArrowUp' || k === 'w' || k === 'W') return 'U';
@@ -3041,6 +3057,7 @@
     }
 
     window.onload = () => {
+      init3DEngine();
       bindControls();
       loadLevel(0, false, true);
       openHomeMenuScreen();
